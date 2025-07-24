@@ -5,21 +5,22 @@ export const modalStyles = StyleSheet.create({
   // Modal de ubicación
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   modalContent: {
     backgroundColor: "white",
-    borderRadius: 20,
+    borderRadius: 24,
     width: "100%",
-    maxHeight: "85%",
-    elevation: 10,
+    maxWidth: 400,
+    maxHeight: "90%",
+    elevation: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowRadius: 20,
   },
   modalHeader: {
     flexDirection: "row",
@@ -48,6 +49,56 @@ export const modalStyles = StyleSheet.create({
     color: colors.textSecondary,
   },
 
+  // Contenedor de información
+  infoContainer: {
+    backgroundColor: colors.belandGreen + "10",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.belandGreen + "20",
+  },
+  infoText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    textAlign: "center",
+  },
+
+  // Contenedor de error
+  errorContainer: {
+    backgroundColor: "#FFF5F5",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#FED7D7",
+  },
+  errorText: {
+    fontSize: 14,
+    color: "#E53E3E",
+    lineHeight: 20,
+    marginBottom: 8,
+    fontWeight: "600",
+  },
+  helpText: {
+    fontSize: 13,
+    color: "#4A5568",
+    lineHeight: 18,
+  },
+  settingsButton: {
+    backgroundColor: "#EDF2F7",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    alignItems: "center",
+  },
+  settingsButtonText: {
+    fontSize: 14,
+    color: "#4A5568",
+    fontWeight: "600",
+  },
+
   // Lista de ubicaciones
   locationList: {
     maxHeight: 500,
@@ -63,14 +114,39 @@ export const modalStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-  mapButtonSelected: {
-    backgroundColor: "#EBF4FF",
-    borderColor: "#007AFF",
+  primaryLocationButton: {
+    backgroundColor: "rgba(102, 126, 234, 0.15)",
+    borderColor: "#667eea",
     borderWidth: 2,
+    // elevation: 3,
+    // shadowColor: "#667eea",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 8,
+  },
+  mapSelectorButton: {
+    backgroundColor: "rgba(118, 75, 162, 0.25)",
+    borderColor: "#764ba2",
+    borderWidth: 1.5,
+    // elevation: 2,
+    // shadowColor: "#764ba2",
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.15,
+    // shadowRadius: 6,
+  },
+  mapButtonSelected: {
+    backgroundColor: "rgba(76, 175, 80, 0.15)",
+    borderColor: "#4CAF50",
+    borderWidth: 2,
+    elevation: 4,
+    shadowColor: "#4CAF50",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
   },
   mapButtonIcon: {
     fontSize: 24,
-    marginRight: 16,
+    textAlign: "center",
   },
   mapButtonContent: {
     flex: 1,
@@ -104,8 +180,11 @@ export const modalStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    backgroundColor: "rgba(102, 126, 234, 0.04)",
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "rgba(102, 126, 234, 0.1)",
   },
   locationOptionIcon: {
     fontSize: 18,
@@ -228,5 +307,37 @@ export const modalStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "white",
+  },
+
+  // Nuevos estilos para iconos mejorados
+  locationIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(102, 126, 234, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  arrowContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  predefinedIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(102, 126, 234, 0.08)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    alignSelf: "center",
+  },
+  locationOptionArrow: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    opacity: 0.7,
   },
 });

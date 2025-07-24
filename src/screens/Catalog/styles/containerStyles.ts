@@ -20,7 +20,7 @@ export const containerStyles = StyleSheet.create({
     zIndex: 1000,
     paddingTop: 50,
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 10,
     backgroundColor: "white",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },

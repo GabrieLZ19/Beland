@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,10 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 import * as Haptics from "expo-haptics";
+import {
+  detectCurrentLocation,
+  requestLocationEnable,
+} from "../utils/locationUtils";
 
 interface MapSelectorProps {
   visible: boolean;
@@ -25,8 +29,83 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
   onClose,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const webViewRef = useRef<any>(null);
 
-  // HTML con OpenStreetMap (sin necesidad de API key)
+  // Limpiar estados cuando el modal se cierra
+  useEffect(() => {
+    if (!visible) {
+      // Solo resetear estados si realmente cambiaron para evitar bucles infinitos
+      setIsGettingLocation(false);
+    } else {
+      // Solo resetear isLoading cuando el modal se abre
+      setIsLoading(true);
+    }
+  }, [visible]);
+
+  // Función para obtener ubicación usando el GPS nativo (igual que en LocationModal)
+  const handleNativeLocationRequest = async () => {
+    try {
+      setIsGettingLocation(true);
+      console.log("Iniciando detección de ubicación nativa...");
+
+      // Primero intentar habilitar ubicación si está desactivada (mostrará diálogo nativo)
+      console.log("Intentando habilitar ubicación...");
+      const locationEnabled = await requestLocationEnable();
+
+      if (!locationEnabled) {
+        console.error("No se pudo habilitar la ubicación");
+        if (webViewRef.current) {
+          const message = JSON.stringify({
+            type: "locationError",
+            error: "Los servicios de ubicación están desactivados.",
+          });
+          webViewRef.current.postMessage(message);
+        }
+        return;
+      }
+
+      const result = await detectCurrentLocation();
+
+      if (result.success && result.address) {
+        console.log("Ubicación obtenida exitosamente:", result);
+
+        // Si tenemos el WebView, enviarle las coordenadas para centrar el mapa
+        if (webViewRef.current && result.coordinates) {
+          const message = JSON.stringify({
+            type: "setLocation",
+            lat: result.coordinates.lat,
+            lng: result.coordinates.lng,
+            address: result.address,
+          });
+          webViewRef.current.postMessage(message);
+        }
+      } else {
+        console.error("Error obteniendo ubicación:", result.error);
+        // Enviar mensaje de error al WebView
+        if (webViewRef.current) {
+          const message = JSON.stringify({
+            type: "locationError",
+            error: result.error || "Error al obtener ubicación",
+          });
+          webViewRef.current.postMessage(message);
+        }
+      }
+    } catch (error) {
+      console.error("Error en handleNativeLocationRequest:", error);
+      if (webViewRef.current) {
+        const message = JSON.stringify({
+          type: "locationError",
+          error: "Error inesperado al obtener ubicación",
+        });
+        webViewRef.current.postMessage(message);
+      }
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
+
+  // HTML simplificado con iconos mejorados
   const mapHTML = `
     <!DOCTYPE html>
     <html>
@@ -49,12 +128,42 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
           top: 0;
           left: 0;
           right: 0;
-          background: #007AFF;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
-          padding: 15px;
+          padding: 20px;
           text-align: center;
           z-index: 1000;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .location-prompt {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: white;
+          padding: 30px;
+          border-radius: 20px;
+          text-align: center;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+          z-index: 1001;
+          max-width: 320px;
+          width: 90%;
+        }
+        .gps-icon {
+          font-size: 48px;
+          margin-bottom: 15px;
+        }
+        .enable-gps-btn {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 25px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          width: 100%;
+          margin: 10px 0;
         }
         .instructions {
           position: fixed;
@@ -62,53 +171,55 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
           left: 20px;
           right: 20px;
           background: white;
-          padding: 15px;
-          border-radius: 10px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          text-align: center;
+          padding: 20px;
+          border-radius: 15px;
+          box-shadow: 0 5px 20px rgba(0,0,0,0.2);
           z-index: 1000;
-          max-height: 120px;
-          overflow-y: auto;
+          text-align: center;
         }
         .confirm-btn {
-          background: #007AFF;
+          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
           color: white;
           border: none;
           padding: 12px 24px;
-          border-radius: 8px;
-          margin-top: 10px;
+          border-radius: 25px;
           font-size: 16px;
+          font-weight: 600;
           cursor: pointer;
           width: 100%;
+          margin-top: 10px;
         }
         .confirm-btn:disabled {
           background: #ccc;
           cursor: not-allowed;
-        }
-        #map {
-          margin-top: 60px;
-          margin-bottom: 140px;
-        }
-        .selected-info {
-          font-size: 12px;
-          color: #666;
-          margin-top: 5px;
         }
       </style>
     </head>
     <body>
       <div class="header">
         <h3>📍 Selecciona tu ubicación</h3>
+        <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Toca en el mapa para seleccionar tu ubicación</p>
       </div>
       
-      <div id="map"></div>
+      <div id="location-prompt" class="location-prompt">
+        <div class="gps-icon">🎯</div>
+        <h3>Encuentra tu ubicación</h3>
+        <p>Para una mejor experiencia, vamos a ubicarte en el mapa automáticamente.</p>
+        <button onclick="requestLocation()" class="enable-gps-btn">
+          🛰️ Activar ubicación
+        </button>
+        <button onclick="initMapManually()" class="enable-gps-btn" style="background: transparent; color: #667eea; border: 2px solid #667eea;">
+          📍 Seleccionar manualmente
+        </button>
+      </div>
       
-      <div class="instructions">
-        <p><strong>Toca en el mapa</strong> para seleccionar tu ubicación</p>
+      <div id="map" style="display: none;"></div>
+      
+      <div id="instructions" class="instructions" style="display: none;">
+        <p><strong>🎯 Toca en el mapa</strong> para seleccionar tu ubicación</p>
         <p id="selected-address">Ninguna ubicación seleccionada</p>
-        <div id="selected-coords" class="selected-info"></div>
         <button id="confirm-btn" class="confirm-btn" disabled onclick="confirmLocation()">
-          Confirmar Ubicación
+          ✓ Confirmar esta ubicación
         </button>
       </div>
 
@@ -118,114 +229,130 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
         let marker;
         let selectedLocation = null;
 
-        function initMap() {
-          // Ubicación inicial (Buenos Aires)
-          const buenosAires = [-34.6118, -58.3960];
-
-          map = L.map('map').setView(buenosAires, 13);
-
-          // Agregar capa de OpenStreetMap
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-          }).addTo(map);
-
-          // Añadir listener para clics en el mapa
-          map.on('click', function(e) {
-            selectLocation(e.latlng);
+        function requestLocation() {
+          document.getElementById('location-prompt').innerHTML = 
+            '<div class="gps-icon">🛰️</div><h3>Activando GPS...</h3><p>Usando GPS nativo para mayor precisión...</p>';
+          
+          // En lugar de usar navigator.geolocation, enviar mensaje a React Native
+          const message = JSON.stringify({
+            type: 'requestNativeLocation'
           });
-
-          console.log('Mapa inicializado correctamente');
+          
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(message);
+          }
         }
 
-        function selectLocation(latlng) {
-          console.log('Ubicación seleccionada:', latlng);
+        function initMapManually() {
+          const defaultLat = -34.6118;
+          const defaultLng = -58.3960;
           
-          // Remover marcador anterior
-          if (marker) {
-            map.removeLayer(marker);
-          }
-
-          // Crear nuevo marcador
-          marker = L.marker([latlng.lat, latlng.lng]).addTo(map);
-
-          // Geocodificación inversa usando Nominatim (gratis)
-          const url = \`https://nominatim.openstreetmap.org/reverse?format=json&lat=\${latlng.lat}&lon=\${latlng.lng}&zoom=18&addressdetails=1\`;
+          document.getElementById('location-prompt').style.display = 'none';
+          document.getElementById('map').style.display = 'block';
+          document.getElementById('instructions').style.display = 'block';
           
-          fetch(url)
-            .then(response => response.json())
-            .then(data => {
-              console.log('Datos de geocodificación:', data);
-              
-              let address = 'Ubicación seleccionada';
-              
-              if (data && data.display_name) {
-                address = data.display_name;
-                
-                // Intentar crear una dirección más limpia
-                if (data.address) {
-                  const addr = data.address;
-                  const parts = [];
-                  
-                  if (addr.road) parts.push(addr.road);
-                  if (addr.house_number) parts.push(addr.house_number);
-                  if (addr.neighbourhood || addr.suburb) parts.push(addr.neighbourhood || addr.suburb);
-                  if (addr.city || addr.town) parts.push(addr.city || addr.town);
-                  if (addr.state) parts.push(addr.state);
-                  
-                  if (parts.length > 0) {
-                    address = parts.join(', ');
-                  }
+          initMapWithLocation(defaultLat, defaultLng);
+        }
+
+        function initMapWithLocation(lat, lng) {
+          map = L.map('map').setView([lat, lng], 15);
+          
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+          }).addTo(map);
+          
+          map.on('click', function(e) {
+            if (marker) {
+              map.removeLayer(marker);
+            }
+            
+            marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+            
+            selectedLocation = {
+              lat: e.latlng.lat,
+              lng: e.latlng.lng
+            };
+            
+            document.getElementById('selected-address').innerHTML = 'Ubicación seleccionada ✓';
+            document.getElementById('confirm-btn').disabled = false;
+            
+            // Geocodificación
+            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + e.latlng.lat + '&lon=' + e.latlng.lng)
+              .then(response => response.json())
+              .then(data => {
+                if (data && data.display_name) {
+                  document.getElementById('selected-address').innerHTML = '📍 ' + data.display_name;
+                  selectedLocation.address = data.display_name;
                 }
-              }
-
-              selectedLocation = {
-                address: address,
-                lat: latlng.lat,
-                lng: latlng.lng
-              };
-              
-              document.getElementById('selected-address').innerText = address;
-              document.getElementById('selected-coords').innerText = 
-                \`Lat: \${latlng.lat.toFixed(6)}, Lng: \${latlng.lng.toFixed(6)}\`;
-              document.getElementById('confirm-btn').disabled = false;
-            })
-            .catch(error => {
-              console.error('Error en geocodificación:', error);
-              
-              // Fallback sin geocodificación
-              selectedLocation = {
-                address: \`Ubicación: \${latlng.lat.toFixed(4)}, \${latlng.lng.toFixed(4)}\`,
-                lat: latlng.lat,
-                lng: latlng.lng
-              };
-              
-              document.getElementById('selected-address').innerText = selectedLocation.address;
-              document.getElementById('selected-coords').innerText = 
-                \`Lat: \${latlng.lat.toFixed(6)}, Lng: \${latlng.lng.toFixed(6)}\`;
-              document.getElementById('confirm-btn').disabled = false;
-            });
+              })
+              .catch(error => {
+                console.error('Error en geocodificación:', error);
+              });
+          });
         }
 
         function confirmLocation() {
           if (selectedLocation) {
-            console.log('Confirmando ubicación:', selectedLocation);
+            const address = selectedLocation.address || 'Ubicación seleccionada';
+            const message = JSON.stringify({
+              type: 'locationSelected',
+              location: address,
+              coordinates: {
+                lat: selectedLocation.lat,
+                lng: selectedLocation.lng
+              }
+            });
             
-            // Enviar ubicación a React Native
             if (window.ReactNativeWebView) {
-              window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: 'LOCATION_SELECTED',
-                data: selectedLocation
-              }));
-            } else {
-              console.error('ReactNativeWebView no disponible');
+              window.ReactNativeWebView.postMessage(message);
             }
           }
         }
 
-        // Inicializar mapa cuando se carga la página
-        document.addEventListener('DOMContentLoaded', function() {
-          console.log('DOM cargado, inicializando mapa...');
-          setTimeout(initMap, 100);
+        // Funciones para manejar ubicación nativa desde React Native
+        function handleNativeLocationSuccess(lat, lng, address) {
+          console.log('Ubicación nativa recibida:', lat, lng, address);
+          
+          document.getElementById('location-prompt').style.display = 'none';
+          document.getElementById('map').style.display = 'block';
+          document.getElementById('instructions').style.display = 'block';
+          
+          initMapWithLocation(lat, lng);
+          
+          // Mostrar mensaje de éxito
+          document.getElementById('instructions').innerHTML = 
+            '<p><strong>✅ Ubicación detectada!</strong> ' + address + '</p><p>🎯 Toca en el mapa para seleccionar tu ubicación de entrega</p><p id="selected-address">Ninguna ubicación seleccionada</p><button id="confirm-btn" class="confirm-btn" disabled onclick="confirmLocation()">✓ Confirmar esta ubicación</button>';
+        }
+
+        function handleNativeLocationError(error) {
+          console.error('Error de ubicación nativa:', error);
+          
+          document.getElementById('location-prompt').innerHTML = 
+            '<div class="gps-icon">⚠️</div><h3>Error de ubicación</h3><p>' + error + '</p><button onclick="initMapManually()" class="enable-gps-btn">📍 Continuar sin GPS</button><button onclick="requestLocation()" class="enable-gps-btn" style="background: transparent; color: #667eea; border: 2px solid #667eea;">🔄 Intentar de nuevo</button>';
+        }
+
+        // Escuchar mensajes de React Native
+        document.addEventListener('message', function(event) {
+          const data = JSON.parse(event.data);
+          console.log('Mensaje recibido:', data);
+          
+          if (data.type === 'setLocation') {
+            handleNativeLocationSuccess(data.lat, data.lng, data.address);
+          } else if (data.type === 'locationError') {
+            handleNativeLocationError(data.error);
+          }
+        });
+        
+        // Para Android
+        window.addEventListener('message', function(event) {
+          const data = JSON.parse(event.data);
+          console.log('Mensaje recibido (Android):', data);
+          
+          if (data.type === 'setLocation') {
+            handleNativeLocationSuccess(data.lat, data.lng, data.address);
+          } else if (data.type === 'locationError') {
+            handleNativeLocationError(data.error);
+          }
         });
       </script>
     </body>
@@ -234,17 +361,24 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
 
   const handleWebViewMessage = (event: any) => {
     try {
-      const message = JSON.parse(event.nativeEvent.data);
+      const data = JSON.parse(event.nativeEvent.data);
 
-      if (message.type === "LOCATION_SELECTED") {
-        const { address, lat, lng } = message.data;
+      if (data.type === "locationSelected") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        onLocationSelect(address, { lat, lng });
-        onClose();
+        onLocationSelect(data.location, data.coordinates);
+      } else if (data.type === "requestNativeLocation") {
+        // El WebView solicita ubicación nativa
+        console.log("WebView solicitó ubicación nativa");
+        handleNativeLocationRequest();
       }
     } catch (error) {
-      console.error("Error parsing WebView message:", error);
+      console.error("Error procesando mensaje del WebView:", error);
     }
+  };
+
+  const closeModal = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onClose();
   };
 
   return (
@@ -252,34 +386,31 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
       visible={visible}
       animationType="slide"
       presentationStyle="fullScreen"
-      onRequestClose={onClose}
+      onRequestClose={closeModal}
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
+          <Text style={styles.headerTitle}>🗺️ Selector de Mapa</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
         </View>
 
         {isLoading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
+            <ActivityIndicator size="large" color="#667eea" />
             <Text style={styles.loadingText}>Cargando mapa...</Text>
           </View>
         )}
 
         <WebView
+          ref={webViewRef}
           source={{ html: mapHTML }}
           style={styles.webview}
           onMessage={handleWebViewMessage}
+          onLoad={() => setIsLoading(false)}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          startInLoadingState={true}
-          onLoadEnd={() => setIsLoading(false)}
         />
       </View>
     </Modal>
@@ -289,49 +420,52 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 50,
     paddingHorizontal: 20,
-    paddingBottom: 10,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    paddingTop: 50,
+    paddingBottom: 15,
+    backgroundColor: "#667eea",
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#fff",
   },
   closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#f0f0f0",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     justifyContent: "center",
     alignItems: "center",
   },
   closeButtonText: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#666",
-  },
-  webview: {
-    flex: 1,
+    fontWeight: "600",
+    color: "#fff",
   },
   loadingContainer: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
+    top: "50%",
+    left: "50%",
     alignItems: "center",
-    backgroundColor: "white",
     zIndex: 1000,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    padding: 20,
+    borderRadius: 15,
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#666",
+    color: "#667eea",
+    fontWeight: "500",
+  },
+  webview: {
+    flex: 1,
   },
 });

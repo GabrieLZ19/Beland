@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useCreateGroupStore } from "../../stores/useCreateGroupStore";
+import { ConfirmationAlert } from "../../components/ui/ConfirmationAlert";
 import { BeCoinIcon } from "../../components/icons/BeCoinIcon";
 import * as Haptics from "expo-haptics";
 
@@ -78,6 +79,11 @@ export const CatalogScreen = () => {
     openProductAddedModal,
     closeProductAddedModal,
   } = useCatalogModals();
+
+  // Estado para el alert de confirmación
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [showDeliveryInfo, setShowDeliveryInfo] = useState(false);
+  const [showRouteInfo, setShowRouteInfo] = useState(false);
 
   const { categories, brands, filteredProducts } = useProductFiltering(
     searchText,
@@ -150,26 +156,13 @@ export const CatalogScreen = () => {
 
   const handleHomeDelivery = () => {
     closeDeliveryModal();
-    // Mostrar información de entrega
-    Alert.alert(
-      "Entrega a domicilio",
-      `El producto "${selectedProduct?.name}" será entregado en tu domicilio.\\n\\nRuta: Desde el local hasta tu casa.\\nTiempo estimado: 30-45 minutos.`,
-      [
-        {
-          text: "Ver ruta",
-          onPress: () => {
-            Alert.alert(
-              "Funcionalidad",
-              "Aquí se mostraría el mapa con la ruta de entrega"
-            );
-          },
-        },
-        {
-          text: "Aceptar",
-          style: "cancel",
-        },
-      ]
-    );
+    // Mostrar información de entrega con nuestro alert personalizado
+    setShowDeliveryInfo(true);
+  };
+
+  const handleShowRoute = () => {
+    setShowDeliveryInfo(false);
+    setShowRouteInfo(true);
   };
 
   // Funciones para navegación
@@ -184,26 +177,15 @@ export const CatalogScreen = () => {
   const handleCancelGroup = () => {
     // Feedback háptico
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      "Cancelar grupo",
-      "¿Estás seguro de que quieres cancelar la creación del grupo? Se perderán todos los productos agregados.",
-      [
-        {
-          text: "No, continuar",
-          style: "cancel",
-        },
-        {
-          text: "Sí, cancelar",
-          style: "destructive",
-          onPress: () => {
-            setIsCreatingGroup(false);
-            // También limpiar los productos del store
-            useCreateGroupStore.getState().clearGroup();
-            (navigation as any).goBack();
-          },
-        },
-      ]
-    );
+    setShowCancelConfirmation(true);
+  };
+
+  const confirmCancelGroup = () => {
+    setIsCreatingGroup(false);
+    // También limpiar los productos del store
+    useCreateGroupStore.getState().clearGroup();
+    setShowCancelConfirmation(false);
+    (navigation as any).goBack();
   };
 
   return (
@@ -316,6 +298,45 @@ export const CatalogScreen = () => {
         visible={showProductAddedModal}
         onContinueAdding={handleContinueAddingProducts}
         onContinueGroup={handleContinueCreatingGroup}
+      />
+
+      {/* Alerta de confirmación para cancelar grupo */}
+      <ConfirmationAlert
+        visible={showCancelConfirmation}
+        title="¿Cancelar creación del grupo?"
+        message="Se perderán todos los productos agregados al carrito. Esta acción no se puede deshacer."
+        confirmText="Sí, cancelar"
+        cancelText="Continuar comprando"
+        type="danger"
+        icon="🛒"
+        onConfirm={confirmCancelGroup}
+        onCancel={() => setShowCancelConfirmation(false)}
+      />
+
+      {/* Alerta de información de entrega */}
+      <ConfirmationAlert
+        visible={showDeliveryInfo}
+        title="Entrega a domicilio"
+        message={`El producto "${selectedProduct?.name}" será entregado en tu domicilio.\n\nRuta: Desde el local hasta tu casa.\nTiempo estimado: 30-45 minutos.`}
+        confirmText="Ver ruta"
+        cancelText="Entendido"
+        type="info"
+        icon="🚚"
+        onConfirm={handleShowRoute}
+        onCancel={() => setShowDeliveryInfo(false)}
+      />
+
+      {/* Alerta de información de ruta */}
+      <ConfirmationAlert
+        visible={showRouteInfo}
+        title="Funcionalidad en desarrollo"
+        message="Aquí se mostraría el mapa interactivo con la ruta de entrega en tiempo real."
+        confirmText="Entendido"
+        cancelText="Volver"
+        type="info"
+        icon="🗺️"
+        onConfirm={() => setShowRouteInfo(false)}
+        onCancel={() => setShowRouteInfo(false)}
       />
     </SafeAreaView>
   );

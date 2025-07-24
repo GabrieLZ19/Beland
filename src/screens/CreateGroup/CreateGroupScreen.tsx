@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, ScrollView, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CustomAlert } from "../../components/ui/CustomAlert";
+import { ConfirmationAlert } from "../../components/ui/ConfirmationAlert";
 import { WaveBottomGray } from "../../components/icons";
 import { GroupService } from "../../services/groupService";
 import { Participant } from "../../types";
@@ -97,6 +98,17 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
   // Estados locales
   const [isLoading, setIsLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [showRemoveProductConfirmation, setShowRemoveProductConfirmation] =
+    useState(false);
+  const [
+    showRemoveParticipantConfirmation,
+    setShowRemoveParticipantConfirmation,
+  ] = useState(false);
+  const [productToRemove, setProductToRemove] = useState<string | null>(null);
+  const [participantToRemove, setParticipantToRemove] = useState<string | null>(
+    null
+  );
   const [alertConfig, setAlertConfig] = useState({
     title: "",
     message: "",
@@ -248,14 +260,62 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
   };
 
   const handleRemoveProduct = (id: string) => {
-    removeProduct(id);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    // Buscar el producto para obtener su nombre
+    const product = products.find((p) => p.id === id);
+    setProductToRemove(id);
+    setShowRemoveProductConfirmation(true);
+  };
+
+  const confirmRemoveProduct = () => {
+    if (productToRemove) {
+      removeProduct(productToRemove);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+    setShowRemoveProductConfirmation(false);
+    setProductToRemove(null);
+  };
+
+  const handleRemoveParticipant = (id: string) => {
+    // Buscar el participante para obtener su nombre
+    const participant = participants.find((p) => p.id === id);
+    setParticipantToRemove(id);
+    setShowRemoveParticipantConfirmation(true);
+  };
+
+  const confirmRemoveParticipant = () => {
+    if (participantToRemove) {
+      removeParticipant(participantToRemove);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+    setShowRemoveParticipantConfirmation(false);
+    setParticipantToRemove(null);
   };
 
   // Navegación al catálogo
   // Funciones de navegación
   const handleBackToGroups = () => {
-    // Navegar a la pestaña de grupos
+    // Verificar si hay datos en el formulario
+    const hasFormData =
+      groupName.trim() !== "" ||
+      description.trim() !== "" ||
+      location !== null ||
+      deliveryTime.trim() !== "" ||
+      participants.length > 0 ||
+      products.length > 0;
+
+    if (hasFormData) {
+      // Mostrar confirmación si hay datos
+      setShowCancelConfirmation(true);
+    } else {
+      // Navegar directamente si no hay datos
+      confirmBackToGroups();
+    }
+  };
+
+  const confirmBackToGroups = () => {
+    // Limpiar el store antes de navegar
+    clearGroup();
+    setShowCancelConfirmation(false);
     navigation.navigate("Groups", { screen: "GroupsList" });
   };
 
@@ -344,7 +404,7 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
             onParticipantNameChange={handleParticipantNameChange}
             onParticipantEmailChange={handleParticipantEmailChange}
             onAddParticipant={handleAddParticipant}
-            onRemoveParticipant={removeParticipant}
+            onRemoveParticipant={handleRemoveParticipant}
           />
 
           {/* Productos */}
@@ -380,6 +440,61 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
         type={alertConfig.type}
         onClose={() => setShowAlert(false)}
         buttonText="Entendido"
+      />
+
+      {/* Alerta de confirmación para cancelar */}
+      <ConfirmationAlert
+        visible={showCancelConfirmation}
+        title="¿Cancelar creación del grupo?"
+        message="Se perderán todos los datos ingresados. Esta acción no se puede deshacer."
+        confirmText="Sí, cancelar"
+        cancelText="Continuar editando"
+        type="warning"
+        icon="⚠️"
+        onConfirm={confirmBackToGroups}
+        onCancel={() => setShowCancelConfirmation(false)}
+      />
+
+      {/* Alerta de confirmación para eliminar producto */}
+      <ConfirmationAlert
+        visible={showRemoveProductConfirmation}
+        title="¿Eliminar producto?"
+        message={`¿Estás seguro de que quieres eliminar ${
+          productToRemove
+            ? products.find((p) => p.id === productToRemove)?.name ||
+              "este producto"
+            : "este producto"
+        } del grupo?`}
+        confirmText="Sí, eliminar"
+        cancelText="Cancelar"
+        type="danger"
+        icon="🗑️"
+        onConfirm={confirmRemoveProduct}
+        onCancel={() => {
+          setShowRemoveProductConfirmation(false);
+          setProductToRemove(null);
+        }}
+      />
+
+      {/* Alerta de confirmación para eliminar participante */}
+      <ConfirmationAlert
+        visible={showRemoveParticipantConfirmation}
+        title="¿Eliminar participante?"
+        message={`¿Estás seguro de que quieres eliminar a ${
+          participantToRemove
+            ? participants.find((p) => p.id === participantToRemove)?.name ||
+              "este participante"
+            : "este participante"
+        } del grupo?`}
+        confirmText="Sí, eliminar"
+        cancelText="Cancelar"
+        type="danger"
+        icon="👥"
+        onConfirm={confirmRemoveParticipant}
+        onCancel={() => {
+          setShowRemoveParticipantConfirmation(false);
+          setParticipantToRemove(null);
+        }}
       />
 
       {/* Modal de ubicación */}

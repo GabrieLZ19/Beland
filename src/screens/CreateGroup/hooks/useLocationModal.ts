@@ -1,5 +1,8 @@
 import { useState, useCallback } from "react";
-import { detectCurrentLocation } from "../../../utils/locationUtils";
+import {
+  detectCurrentLocation,
+  requestLocationEnable,
+} from "../../../utils/locationUtils";
 
 interface LocationResult {
   address: string;
@@ -48,6 +51,20 @@ export const useLocationModal = (
   const getCurrentLocation = async (): Promise<LocationResult | null> => {
     try {
       setIsLoadingLocation(true);
+      setCurrentLocation(null); // Limpiar ubicación anterior
+
+      // Primero intentar habilitar ubicación si está desactivada (mostrará diálogo nativo)
+      console.log("Intentando habilitar ubicación...");
+      const locationEnabled = await requestLocationEnable();
+
+      if (!locationEnabled) {
+        const errorResult: LocationResult = {
+          address: "",
+          error: "Los servicios de ubicación están desactivados.",
+        };
+        setCurrentLocation(errorResult);
+        return null;
+      }
 
       const result = await detectCurrentLocation();
 
@@ -59,16 +76,21 @@ export const useLocationModal = (
         setCurrentLocation(locationResult);
         return locationResult;
       } else {
-        // Manejar error
+        // Manejar error específico
         const errorResult: LocationResult = {
           address: "",
-          error: result.error,
+          error: result.error || "No se pudo detectar tu ubicación",
         };
         setCurrentLocation(errorResult);
         return null;
       }
     } catch (error) {
       console.error("Error en useLocationModal:", error);
+      const errorResult: LocationResult = {
+        address: "",
+        error: "Error inesperado al detectar ubicación",
+      };
+      setCurrentLocation(errorResult);
       return null;
     } finally {
       setIsLoadingLocation(false);

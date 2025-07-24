@@ -6,6 +6,8 @@ import {
   Modal,
   ScrollView,
   ActivityIndicator,
+  Linking,
+  Platform,
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import { MapSelector } from "../../../components/MapSelector";
@@ -51,9 +53,26 @@ export const LocationModal: React.FC<LocationModalProps> = ({
     onClose();
   };
 
-  const handleCurrentLocation = () => {
+  const handleCurrentLocation = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    onGetCurrentLocation();
+
+    try {
+      // Intentar obtener la ubicación
+      await onGetCurrentLocation();
+    } catch (error) {
+      console.error("Error obteniendo ubicación:", error);
+      // El error ya será manejado por el hook useLocationModal
+    }
+  };
+
+  const openLocationSettings = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    if (Platform.OS === "ios") {
+      Linking.openURL("app-settings:");
+    } else {
+      Linking.openSettings();
+    }
   };
 
   const predefinedLocations = [
@@ -77,7 +96,9 @@ export const LocationModal: React.FC<LocationModalProps> = ({
       <View style={modalStyles.modalOverlay}>
         <View style={modalStyles.modalContent}>
           <View style={modalStyles.modalHeader}>
-            <Text style={modalStyles.modalTitle}>📍 Seleccionar Ubicación</Text>
+            <Text style={modalStyles.modalTitle}>
+              📍 Selecciona tu ubicación
+            </Text>
             <TouchableOpacity
               style={modalStyles.modalCloseButton}
               onPress={onClose}
@@ -87,58 +108,104 @@ export const LocationModal: React.FC<LocationModalProps> = ({
           </View>
 
           <ScrollView style={modalStyles.locationList}>
-            {/* Botón de ubicación actual */}
+            {/* Mensaje informativo */}
+            <View style={modalStyles.infoContainer}>
+              <Text style={modalStyles.infoText}>
+                🎯 Para crear un grupo exitoso, necesitamos saber tu ubicación
+                para coordinar la entrega de productos.
+              </Text>
+            </View>
+
+            {/* Mensaje de ayuda si hay error */}
+            {currentLocation?.error && (
+              <View style={modalStyles.errorContainer}>
+                <Text style={modalStyles.errorText}>
+                  ⚠️ {currentLocation.error}
+                </Text>
+                <Text style={modalStyles.helpText}>
+                  💡 Consejos: Asegúrate de tener activado el GPS en tu
+                  dispositivo y permite el acceso a la ubicación cuando te lo
+                  solicite.
+                </Text>
+                <TouchableOpacity
+                  style={modalStyles.settingsButton}
+                  onPress={openLocationSettings}
+                  activeOpacity={0.8}
+                >
+                  <Text style={modalStyles.settingsButtonText}>
+                    ⚙️ Abrir configuración de ubicación
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Botón de ubicación actual con iconos mejorados */}
             <TouchableOpacity
               style={[
                 modalStyles.mapButton,
-                currentLocation && modalStyles.mapButtonSelected,
+                modalStyles.primaryLocationButton,
+                currentLocation &&
+                  !currentLocation.error &&
+                  modalStyles.mapButtonSelected,
               ]}
               onPress={handleCurrentLocation}
               activeOpacity={0.8}
               disabled={isLoadingLocation}
             >
-              <Text style={modalStyles.mapButtonIcon}>
-                {isLoadingLocation ? "⏳" : "📍"}
-              </Text>
+              <View style={modalStyles.locationIconContainer}>
+                <Text style={modalStyles.mapButtonIcon}>
+                  {isLoadingLocation
+                    ? "🔄"
+                    : currentLocation && !currentLocation.error
+                    ? "✅"
+                    : "🛰️"}
+                </Text>
+              </View>
               <View style={modalStyles.mapButtonContent}>
                 <Text style={modalStyles.mapButtonText}>
                   {isLoadingLocation
-                    ? "Obteniendo ubicación..."
-                    : currentLocation
-                    ? "Usar ubicación actual"
-                    : "Obtener mi ubicación"}
+                    ? "Detectando tu ubicación..."
+                    : currentLocation && !currentLocation.error
+                    ? "Ubicación detectada ✓"
+                    : "Usar mi ubicación actual"}
                 </Text>
                 <Text style={modalStyles.mapButtonSubtext}>
-                  {currentLocation
+                  {currentLocation && !currentLocation.error
                     ? currentLocation.address
-                    : "GPS y geolocalización"}
+                    : "Activar GPS para detección automática"}
                 </Text>
               </View>
               {isLoadingLocation ? (
-                <ActivityIndicator size="small" color="#007AFF" />
+                <ActivityIndicator size="small" color="#667eea" />
               ) : (
-                <Text style={modalStyles.mapButtonArrow}>
-                  {currentLocation ? "✓" : "→"}
-                </Text>
+                <View style={modalStyles.arrowContainer}>
+                  <Text style={modalStyles.mapButtonArrow}>
+                    {currentLocation && !currentLocation.error ? "📍" : "→"}
+                  </Text>
+                </View>
               )}
             </TouchableOpacity>
 
-            {/* Botón del Selector de Mapa Integrado */}
+            {/* Botón del Selector de Mapa con iconos mejorados */}
             <TouchableOpacity
-              style={modalStyles.mapButton}
+              style={[modalStyles.mapButton, modalStyles.mapSelectorButton]}
               onPress={openMapSelector}
               activeOpacity={0.8}
             >
-              <Text style={modalStyles.mapButtonIcon}>🎯</Text>
+              <View style={modalStyles.locationIconContainer}>
+                <Text style={modalStyles.mapButtonIcon}>🗺️</Text>
+              </View>
               <View style={modalStyles.mapButtonContent}>
                 <Text style={modalStyles.mapButtonText}>
-                  Seleccionar en Mapa
+                  Seleccionar en el mapa
                 </Text>
                 <Text style={modalStyles.mapButtonSubtext}>
-                  Mapa integrado - Selección automática
+                  Navega y elige tu ubicación exacta
                 </Text>
               </View>
-              <Text style={modalStyles.mapButtonArrow}>→</Text>
+              <View style={modalStyles.arrowContainer}>
+                <Text style={modalStyles.mapButtonArrow}>→</Text>
+              </View>
             </TouchableOpacity>
 
             <View style={modalStyles.locationDivider}>
@@ -154,8 +221,11 @@ export const LocationModal: React.FC<LocationModalProps> = ({
                 onPress={() => handleLocationSelect(loc)}
                 activeOpacity={0.8}
               >
-                <Text style={modalStyles.locationOptionIcon}>📍</Text>
+                <View style={modalStyles.predefinedIconContainer}>
+                  <Text style={modalStyles.locationOptionIcon}>📍</Text>
+                </View>
                 <Text style={modalStyles.locationOptionText}>{loc}</Text>
+                <Text style={modalStyles.locationOptionArrow}>→</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
