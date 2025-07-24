@@ -1,4 +1,4 @@
-# 🌱 Beland Native
+# 🌱 Beland 
 
 **Aplicación móvil de reciclaje inteligente con incentivos BeCoins**
 
@@ -324,8 +324,8 @@ Distribuido bajo la licencia MIT. Ver `LICENSE` para más información.
 
 ## � Equipo
 
-**Gabriel Zárate** - _Full Stack Developer_  
-📧 Email: [gabriel@beland.com]  
+**Gabriel Lazo** - _Full Stack Developer_  
+📧 Email: [gabriellazo48@gmail.com]  
 🔗 GitHub: [@GabrieLZ19](https://github.com/GabrieLZ19)
 
 ---
@@ -350,7 +350,7 @@ Distribuido bajo la licencia MIT. Ver `LICENSE` para más información.
 
 ---
 
-**🌱 Juntos hacia un futuro más sustentable con Beland Native** 🌱
+**🌱 Juntos hacia un futuro más sustentable con Beland ** 🌱
 
 - 💳 **Wallet** - Billetera digital con autenticación facial
 - 🎁 **Premios** - Catálogo de recompensas (próximamente)
