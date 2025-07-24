@@ -6,7 +6,7 @@
 export const CURRENT_USER = {
   id: "user_1",
   name: "Usuario Actual",
-  email: "usuario@ejemplo.com",
+  instagramUsername: "mi_usuario",
 } as const;
 
 export const CURRENT_USER_ID = CURRENT_USER.id;

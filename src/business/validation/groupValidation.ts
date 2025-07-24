@@ -10,7 +10,7 @@ export interface FormErrors {
   participants?: string;
   products?: string;
   newParticipantName?: string;
-  newParticipantEmail?: string;
+  newParticipantInstagram?: string;
 }
 
 /**
@@ -43,22 +43,31 @@ export const validateParticipantName = (name: string): string | undefined => {
 };
 
 /**
- * Valida email de participante (opcional)
+ * Valida usuario de Instagram (opcional)
  */
-export const validateParticipantEmail = (
-  email: string,
-  existingEmails: string[] = []
+export const validateParticipantInstagram = (
+  instagram: string,
+  existingUsernames: string[] = []
 ): string | undefined => {
-  if (!email.trim()) {
-    return undefined; // Email es opcional
+  if (!instagram.trim()) {
+    return "El usuario de Instagram es obligatorio";
   }
 
-  if (!validateEmail(email)) {
-    return "Email inválido";
+  // Limpiar @ si existe
+  const cleanUsername = instagram.trim().replace(/^@/, "");
+
+  // Validar formato de usuario de Instagram
+  const instagramRegex = /^[a-zA-Z0-9._]{1,30}$/;
+  if (!instagramRegex.test(cleanUsername)) {
+    return "Usuario de Instagram inválido (solo letras, números, . y _)";
   }
 
-  if (existingEmails.some((e) => e.toLowerCase() === email.toLowerCase())) {
-    return "Este email ya está registrado";
+  if (
+    existingUsernames.some(
+      (u) => u.toLowerCase() === cleanUsername.toLowerCase()
+    )
+  ) {
+    return "Este usuario de Instagram ya está registrado";
   }
 
   return undefined;

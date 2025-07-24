@@ -1,7 +1,10 @@
 export interface Participant {
   id: string;
   name: string;
-  email: string;
+  instagramUsername?: string; // Usuario de Instagram
+  instagramProfilePic?: string; // URL de la foto de perfil
+  instagramFullName?: string; // Nombre completo desde Instagram
+  isVerified?: boolean; // Si está verificado en Instagram
   isPayingForAll?: boolean; // Si paga por todos
   customAmount?: number; // Monto personalizado
 }

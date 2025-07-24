@@ -7,3 +7,7 @@ export { EnhancedCard } from "./EnhancedCard";
 export { EnhancedButton } from "./EnhancedButton";
 export { EnhancedList } from "./EnhancedList";
 export { EnhancedInput } from "./EnhancedInput";
+export { BeCoinsBalance } from "./BeCoinsBalance";
+export { AddParticipantModal } from "./AddParticipantModal";
+export { InstagramSearchInput } from "./InstagramSearchInput";
+export { PaymentWithBeCoins } from "./PaymentWithBeCoins";

@@ -3,7 +3,7 @@ import { FormErrors } from "../../../business/validation/groupValidation";
 
 export const useCreateGroupForm = () => {
   const [newParticipantName, setNewParticipantName] = useState("");
-  const [newParticipantEmail, setNewParticipantEmail] = useState("");
+  const [newParticipantInstagram, setNewParticipantInstagram] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,7 +44,7 @@ export const useCreateGroupForm = () => {
   return {
     // Estados
     newParticipantName,
-    newParticipantEmail,
+    newParticipantInstagram,
     errors,
     isLoading,
     showAlert,
@@ -52,7 +52,7 @@ export const useCreateGroupForm = () => {
 
     // Setters
     setNewParticipantName,
-    setNewParticipantEmail,
+    setNewParticipantInstagram,
     setErrors,
     setIsLoading,
     setShowAlert,

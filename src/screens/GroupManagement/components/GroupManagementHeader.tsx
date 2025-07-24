@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity, StatusBar } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Group } from "../../../types";
 import { colors } from "../../../styles/colors";
-import { BeCoinIcon } from "../../../components/icons";
 import { headerStyles } from "../styles";
+import { formatUSDPrice, CURRENCY_CONFIG } from "../../../constants";
 
 interface GroupManagementHeaderProps {
   currentGroup: Group | null;
@@ -75,30 +75,38 @@ export const GroupManagementHeader: React.FC<GroupManagementHeaderProps> = ({
           <View style={headerStyles.statIconContainer}>
             <Text style={headerStyles.statIcon}>👥</Text>
           </View>
-          <Text style={headerStyles.statValue}>
+          <Text style={headerStyles.statValue} numberOfLines={1}>
             {currentGroup?.totalParticipants}
           </Text>
-          <Text style={headerStyles.statLabel}>Participantes</Text>
+          <Text style={headerStyles.statLabel} numberOfLines={1}>
+            Participantes
+          </Text>
         </View>
 
         <View style={headerStyles.statCard}>
           <View style={headerStyles.statIconContainer}>
-            <BeCoinIcon width={24} height={24} />
+            <Text style={headerStyles.statIcon}>💰</Text>
           </View>
-          <Text style={headerStyles.statValue}>
-            ${currentGroup?.totalAmount.toFixed(2)}
+          <Text style={headerStyles.statValue} numberOfLines={1}>
+            {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+            {formatUSDPrice(currentGroup?.totalAmount || 0)}
           </Text>
-          <Text style={headerStyles.statLabel}>Total</Text>
+          <Text style={headerStyles.statLabel} numberOfLines={1}>
+            Total
+          </Text>
         </View>
 
         <View style={headerStyles.statCard}>
           <View style={headerStyles.statIconContainer}>
-            <BeCoinIcon width={24} height={24} />
+            <Text style={headerStyles.statIcon}>🧾</Text>
           </View>
-          <Text style={headerStyles.statValue}>
-            ${currentGroup?.myConsumption.toFixed(2)}
+          <Text style={headerStyles.statValue} numberOfLines={1}>
+            {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+            {formatUSDPrice(currentGroup?.myConsumption || 0)}
           </Text>
-          <Text style={headerStyles.statLabel}>Tu parte</Text>
+          <Text style={headerStyles.statLabel} numberOfLines={1}>
+            Tu parte
+          </Text>
         </View>
       </View>
     </LinearGradient>

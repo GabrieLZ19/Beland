@@ -15,7 +15,7 @@ export const REWARDS_DATA: Reward[] = [
   {
     id: 2,
     title: "Descuento supermercado",
-    description: "10% off en compras mayores a $5000",
+    description: "10% off en compras mayores a $14.29", // ~$5000 pesos convertidos
     cost: 200,
     category: "Compras",
     available: true,

@@ -1,4 +1,8 @@
-import { VALIDATION_RULES } from "../constants";
+import {
+  VALIDATION_RULES,
+  formatUSDPrice,
+  CURRENCY_CONFIG,
+} from "../constants";
 
 export const validateEmail = (email: string): boolean => {
   return VALIDATION_RULES.EMAIL_FORMAT.test(email);
@@ -25,7 +29,9 @@ export const formatTime = (text: string): string => {
 export const formatCurrency = (amount: number | string): string => {
   const numAmount =
     typeof amount === "number" ? amount : parseFloat(amount.toString());
-  return `$${numAmount.toLocaleString()}`;
+  return `${CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}${formatUSDPrice(
+    numAmount
+  )}`;
 };
 
 export const generateId = (): string => {

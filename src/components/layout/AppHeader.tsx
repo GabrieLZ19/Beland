@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { BeCoinIcon } from "../icons/BeCoinIcon";
 import { BelandLogo } from "../icons/BelandLogo";
+import { BeCoinsBalance } from "../ui/BeCoinsBalance";
 import { colors } from "../../styles/colors";
 
 interface AppHeaderProps {
@@ -13,7 +14,7 @@ interface AppHeaderProps {
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   userName = "Zaire",
-  coinsAmount = 470,
+  coinsAmount, // Ya no se usa, se obtiene del store
   onMenuPress,
   onCoinsPress,
 }) => {
@@ -25,13 +26,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </View>
         <Text style={styles.greeting}>¡Hola, {userName}!</Text>
       </View>
-      <TouchableOpacity style={styles.coinsSection} onPress={onCoinsPress}>
-        <View style={styles.headerCoinsContainer}>
-          <BeCoinIcon width={20} height={20} />
-          <Text style={styles.coinsText}>{coinsAmount}</Text>
-        </View>
-        <Text style={styles.coinsLabel}>BeCoins</Text>
-      </TouchableOpacity>
+      <BeCoinsBalance
+        size="medium"
+        variant="header"
+        onPress={onCoinsPress}
+        style={styles.coinsSection}
+      />
       <TouchableOpacity style={styles.menuButton} onPress={onMenuPress}>
         <Text style={styles.menuIcon}>⋮</Text>
       </TouchableOpacity>
@@ -76,11 +76,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   coinsSection: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignItems: "center",
+    // El BeCoinsBalance se encarga de todos los estilos
   },
   headerCoinsContainer: {
     flexDirection: "row",

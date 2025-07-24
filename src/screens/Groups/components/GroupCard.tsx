@@ -7,6 +7,7 @@ import { colors } from "../../../styles/colors";
 import { Group } from "../../../types";
 import { groupCardStyles, buttonStyles } from "../styles";
 import { useGroupsUtils } from "../hooks";
+import { CURRENCY_CONFIG } from "../../../constants";
 
 interface GroupCardProps {
   group: Group;
@@ -57,7 +58,8 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, onPress }) => {
             <View style={groupCardStyles.amountContainer}>
               <BeCoinIcon width={16} height={16} />
               <Text style={groupCardStyles.amountValue}>
-                ${formatAmount(group.totalAmount)}
+                {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+                {formatAmount(group.totalAmount)}
               </Text>
             </View>
           </View>
@@ -66,7 +68,8 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, onPress }) => {
             <View style={groupCardStyles.amountContainer}>
               <BeCoinIcon width={14} height={14} />
               <Text style={groupCardStyles.myAmountValue}>
-                ${formatAmount(group.myConsumption)}
+                {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+                {formatAmount(group.myConsumption)}
               </Text>
             </View>
           </View>

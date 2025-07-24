@@ -8,10 +8,10 @@ import { participantStyles } from "../styles";
 interface ParticipantsSectionProps {
   participants: Participant[];
   newParticipantName: string;
-  newParticipantEmail: string;
+  newParticipantInstagram: string;
   errors: FormErrors;
   onParticipantNameChange: (text: string) => void;
-  onParticipantEmailChange: (text: string) => void;
+  onParticipantInstagramChange: (text: string) => void;
   onAddParticipant: () => void;
   onRemoveParticipant: (id: string) => void;
 }
@@ -19,10 +19,10 @@ interface ParticipantsSectionProps {
 export const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
   participants,
   newParticipantName,
-  newParticipantEmail,
+  newParticipantInstagram,
   errors,
   onParticipantNameChange,
-  onParticipantEmailChange,
+  onParticipantInstagramChange,
   onAddParticipant,
   onRemoveParticipant,
 }) => {
@@ -75,9 +75,9 @@ export const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
             <Text style={participantStyles.participantName}>
               {participant.name}
             </Text>
-            {participant.email ? (
+            {participant.instagramUsername ? (
               <Text style={participantStyles.participantEmail}>
-                {participant.email}
+                @{participant.instagramUsername}
               </Text>
             ) : (
               <Text style={participantStyles.participantRole}>
@@ -134,26 +134,25 @@ export const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
         <View style={participantStyles.modernInputGroup}>
           <View style={participantStyles.inputWrapper}>
             <View style={participantStyles.inputIconContainer}>
-              <Text style={participantStyles.inputIcon}>✉️</Text>
+              <Text style={participantStyles.inputIcon}>📸</Text>
             </View>
             <View style={participantStyles.inputContent}>
               <Text style={participantStyles.modernInputLabel}>
-                Email (opcional)
+                Instagram (opcional)
               </Text>
               <TextInput
                 style={participantStyles.modernTextInput}
-                placeholder="email@ejemplo.com"
-                value={newParticipantEmail}
-                onChangeText={onParticipantEmailChange}
-                keyboardType="email-address"
+                placeholder="@usuario_instagram"
+                value={newParticipantInstagram}
+                onChangeText={onParticipantInstagramChange}
                 autoCapitalize="none"
                 placeholderTextColor="#A0A0A0"
               />
             </View>
           </View>
-          {errors.newParticipantEmail && (
+          {errors.newParticipantInstagram && (
             <Text style={participantStyles.modernErrorText}>
-              {errors.newParticipantEmail}
+              {errors.newParticipantInstagram}
             </Text>
           )}
         </View>

@@ -21,12 +21,14 @@ export const containerStyles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
     paddingBottom: 10,
-    backgroundColor: "white",
+    backgroundColor: colors.belandOrange, // Fondo naranja por defecto
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 8,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   headerCreatingGroup: {
     backgroundColor: colors.belandGreen,
@@ -59,28 +61,18 @@ export const containerStyles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: "700" as const,
-    color: colors.textPrimary,
+    color: "#FFFFFF", // Color blanco por defecto para el fondo naranja
     marginBottom: 2,
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: "#FFFFFF", // Color blanco por defecto para el fondo naranja
     fontWeight: "500" as const,
-    opacity: 0.8,
+    opacity: 0.9,
   },
   coinsContainer: {
-    flexDirection: "row" as const,
-    alignItems: "center" as const,
-    backgroundColor: colors.belandGreenLight,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 24,
-    shadowColor: colors.belandGreen,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
+    // El BeCoinsBalance se encarga de todos los estilos
   },
   coinsText: {
     fontSize: 15,

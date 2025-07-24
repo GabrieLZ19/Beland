@@ -13,6 +13,7 @@ import {
   validateAmount,
   formatAmount,
 } from "../../business/validation/paymentValidation";
+import { formatUSDPrice, CURRENCY_CONFIG } from "../../constants";
 
 interface PaymentModeManagerProps {
   group: Group;
@@ -176,12 +177,15 @@ export const PaymentModeManager: React.FC<PaymentModeManagerProps> = ({
             <View style={formStyles.participantInfo}>
               <Text style={formStyles.participantName}>{participant.name}</Text>
               <Text style={formStyles.participantEmail}>
-                {participant.email}
+                {participant.instagramUsername
+                  ? `@${participant.instagramUsername}`
+                  : "Sin Instagram"}
               </Text>
             </View>
             {selectedPayingUser === participant.id && (
               <Text style={formStyles.paymentAmount}>
-                ${group.totalAmount.toFixed(2)}
+                {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+                {formatUSDPrice(group.totalAmount)}
               </Text>
             )}
           </TouchableOpacity>
@@ -205,10 +209,12 @@ export const PaymentModeManager: React.FC<PaymentModeManagerProps> = ({
 
         <View style={formStyles.balanceInfo}>
           <Text style={formStyles.balanceLabel}>
-            Total del grupo: ${group.totalAmount.toFixed(2)}
+            Total del grupo: {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+            {formatUSDPrice(group.totalAmount)}
           </Text>
           <Text style={formStyles.balanceLabel}>
-            Total asignado: ${totalCustom.toFixed(2)}
+            Total asignado: {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+            {formatUSDPrice(totalCustom)}
           </Text>
           <Text
             style={[
@@ -218,7 +224,9 @@ export const PaymentModeManager: React.FC<PaymentModeManagerProps> = ({
           >
             {isBalanced
               ? "✓ Balanceado"
-              : `Diferencia: $${(group.totalAmount - totalCustom).toFixed(2)}`}
+              : `Diferencia: ${
+                  CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL
+                }${formatUSDPrice(Math.abs(group.totalAmount - totalCustom))}`}
           </Text>
         </View>
 
@@ -227,11 +235,15 @@ export const PaymentModeManager: React.FC<PaymentModeManagerProps> = ({
             <View style={formStyles.participantInfo}>
               <Text style={formStyles.participantName}>{participant.name}</Text>
               <Text style={formStyles.participantEmail}>
-                {participant.email}
+                {participant.instagramUsername
+                  ? `@${participant.instagramUsername}`
+                  : "Sin Instagram"}
               </Text>
             </View>
             <View style={formStyles.amountInputContainer}>
-              <Text style={formStyles.currencySymbol}>$</Text>
+              <Text style={formStyles.currencySymbol}>
+                {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+              </Text>
               <TextInput
                 style={[
                   formStyles.amountInput,

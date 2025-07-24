@@ -3,6 +3,7 @@
  */
 
 import { Product, Participant } from "../types";
+import { formatUSDPrice, CURRENCY_CONFIG } from "../constants";
 
 /**
  * Calcula el costo total estimado de todos los productos
@@ -28,17 +29,17 @@ export const getCostPerPerson = (
 };
 
 /**
- * Convierte el costo a BeCoins (1 peso = 100 BeCoins aprox)
+ * Convierte el costo a BeCoins (10% del monto en USD)
  */
 export const convertToBeCoins = (amount: number): number => {
-  return Math.round(amount / 100);
+  return Math.round(amount * 0.1 * 100) / 100;
 };
 
 /**
- * Formatea un monto en pesos argentinos
+ * Formatea un monto en dólares
  */
 export const formatCurrency = (amount: number): string => {
-  return `$${amount.toLocaleString()}`;
+  return `${CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}${formatUSDPrice(amount)}`;
 };
 
 /**

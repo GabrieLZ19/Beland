@@ -16,3 +16,16 @@ export const UI_CONSTANTS = {
   MAX_PRODUCTS_PREVIEW: 2,
   TIME_INPUT_MAX_LENGTH: 5,
 } as const;
+
+// Re-exportar configuración de moneda y BeCoins
+export {
+  CURRENCY_CONFIG,
+  convertPesoToUSD,
+  formatUSDPrice,
+  convertAndFormatPrice,
+  BECOIN_CONFIG,
+  formatBeCoins,
+  formatBeCoinsWithValue,
+  convertUSDToBeCoins,
+  convertBeCoinsToUSD,
+} from "./currency";

@@ -13,7 +13,7 @@ import * as Haptics from "expo-haptics";
 import {
   validateGroupForm,
   validateParticipantName,
-  validateParticipantEmail,
+  validateParticipantInstagram,
 } from "../../business/validation/groupValidation";
 import {
   formatTimeInput,
@@ -63,10 +63,10 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
   // Hooks personalizados (usando la implementación actual)
   const {
     newParticipantName,
-    newParticipantEmail,
+    newParticipantInstagram,
     errors,
     setNewParticipantName,
-    setNewParticipantEmail,
+    setNewParticipantInstagram,
     clearError,
     setError,
   } = useCreateGroupForm();
@@ -183,10 +183,10 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
     }
   };
 
-  const handleParticipantEmailChange = (text: string) => {
-    setNewParticipantEmail(text);
-    if (errors.newParticipantEmail && text.includes("@")) {
-      clearError("newParticipantEmail");
+  const handleParticipantInstagramChange = (text: string) => {
+    setNewParticipantInstagram(text);
+    if (errors.newParticipantInstagram && text.trim()) {
+      clearError("newParticipantInstagram");
     }
   };
 
@@ -222,31 +222,33 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
   // Agregar participante
   const handleAddParticipant = () => {
     const nameError = validateParticipantName(newParticipantName);
-    const existingEmails = participants
-      .map((p) => p.email || "")
-      .filter((email) => email);
-    const emailError = validateParticipantEmail(
-      newParticipantEmail,
-      existingEmails
+    const existingUsernames = participants
+      .map((p) => p.instagramUsername || "")
+      .filter((username) => username);
+    const instagramError = validateParticipantInstagram(
+      newParticipantInstagram,
+      existingUsernames
     );
 
     if (nameError) setError("newParticipantName", nameError);
-    if (emailError) setError("newParticipantEmail", emailError);
+    if (instagramError) setError("newParticipantInstagram", instagramError);
 
-    if (nameError || emailError) return;
+    if (nameError || instagramError) return;
 
     clearError("newParticipantName");
-    clearError("newParticipantEmail");
+    clearError("newParticipantInstagram");
     clearError("participants");
 
     const newParticipant: Participant = {
       id: Date.now().toString(),
       name: formatPersonName(newParticipantName),
-      email: newParticipantEmail.trim() ? formatEmail(newParticipantEmail) : "",
+      instagramUsername: newParticipantInstagram.trim()
+        ? newParticipantInstagram.trim().replace(/^@/, "")
+        : undefined,
     };
     addParticipant(newParticipant);
     setNewParticipantName("");
-    setNewParticipantEmail("");
+    setNewParticipantInstagram("");
   };
 
   // Productos con feedback háptico
@@ -360,7 +362,7 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
         setDeliveryTime("");
         clearGroup();
         setNewParticipantName("");
-        setNewParticipantEmail("");
+        setNewParticipantInstagram("");
         navigation.goBack();
       }, 2000);
     } catch (error) {
@@ -399,10 +401,10 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
           <ParticipantsSection
             participants={participants}
             newParticipantName={newParticipantName}
-            newParticipantEmail={newParticipantEmail}
+            newParticipantInstagram={newParticipantInstagram}
             errors={errors}
             onParticipantNameChange={handleParticipantNameChange}
-            onParticipantEmailChange={handleParticipantEmailChange}
+            onParticipantInstagramChange={handleParticipantInstagramChange}
             onAddParticipant={handleAddParticipant}
             onRemoveParticipant={handleRemoveParticipant}
           />

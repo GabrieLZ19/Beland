@@ -3,6 +3,7 @@
  */
 
 import { Group } from "../../types";
+import { formatUSDPrice } from "../../constants";
 
 /**
  * Valida si los montos personalizados suman correctamente al total
@@ -44,5 +45,5 @@ export const validateAmount = (amount: string): boolean => {
  * Formatea un monto para mostrar
  */
 export const formatAmount = (amount: number): string => {
-  return amount.toFixed(2);
+  return formatUSDPrice(amount);
 };

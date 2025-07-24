@@ -35,14 +35,7 @@ export const headerStyles = StyleSheet.create({
     marginTop: 4,
   },
   coinsDisplay: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    flexDirection: "row" as const,
-    alignItems: "center" as const,
-    gap: 6,
-    minWidth: 80,
+    // El BeCoinsBalance se encarga de todos los estilos
   },
   coinsText: {
     color: "#FFFFFF",

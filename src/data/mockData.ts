@@ -1,4 +1,5 @@
 import { Group, Product } from "../types";
+import { convertPesoToUSD } from "../constants/currency";
 
 export const AVAILABLE_PRODUCTS: Omit<
   Product,
@@ -7,49 +8,49 @@ export const AVAILABLE_PRODUCTS: Omit<
   {
     id: "1",
     name: "Empanadas (docena)",
-    basePrice: 4800,
+    basePrice: convertPesoToUSD(4800), // ~$13.71
     category: "Comida",
   },
   {
     id: "2",
     name: "Pizza Grande",
-    basePrice: 6500,
+    basePrice: convertPesoToUSD(6500), // ~$18.57
     category: "Comida",
   },
   {
     id: "3",
     name: "Gaseosas (6 unidades)",
-    basePrice: 3600,
+    basePrice: convertPesoToUSD(3600), // ~$10.29
     category: "Bebidas",
   },
   {
     id: "4",
     name: "Cerveza Artesanal (6 unidades)",
-    basePrice: 7200,
+    basePrice: convertPesoToUSD(7200), // ~$20.57
     category: "Bebidas",
   },
   {
     id: "5",
     name: "Picada Grande",
-    basePrice: 5500,
+    basePrice: convertPesoToUSD(5500), // ~$15.71
     category: "Comida",
   },
   {
     id: "6",
     name: "Vino (2 botellas)",
-    basePrice: 3250,
+    basePrice: convertPesoToUSD(3250), // ~$9.29
     category: "Bebidas",
   },
   {
     id: "7",
     name: "Postres Variados",
-    basePrice: 4200,
+    basePrice: convertPesoToUSD(4200), // ~$12.00
     category: "Dulces",
   },
   {
     id: "8",
     name: "Agua Saborizada (12 unidades)",
-    basePrice: 2800,
+    basePrice: convertPesoToUSD(2800), // ~$8.00
     category: "Bebidas",
   },
 ];
@@ -62,10 +63,10 @@ export const MOCK_GROUPS: Group[] = [
     location: "Palermo, CABA",
     deliveryTime: "19:30",
     participantsList: [
-      { id: "creator", name: "Tú (Creador)", email: "tu@email.com" },
-      { id: "p1", name: "Ana Martínez", email: "ana@email.com" },
-      { id: "p2", name: "Carlos González", email: "carlos@email.com" },
-      { id: "p3", name: "Laura Rodríguez", email: "laura@email.com" },
+      { id: "creator", name: "Tú (Creador)", instagramUsername: "mi_usuario" },
+      { id: "p1", name: "Ana Martínez", instagramUsername: "ana_martinez" },
+      { id: "p2", name: "Carlos González", instagramUsername: "carlosg" },
+      { id: "p3", name: "Laura Rodríguez", instagramUsername: "laura_rod" },
     ],
     participants: 8,
     products: [
@@ -73,23 +74,23 @@ export const MOCK_GROUPS: Group[] = [
         id: "1",
         name: "Pizza Grande",
         quantity: 3,
-        estimatedPrice: 6500,
-        totalPrice: 19500,
+        estimatedPrice: convertPesoToUSD(6500), // ~$18.57
+        totalPrice: convertPesoToUSD(19500), // ~$55.71
       },
       {
         id: "2",
         name: "Gaseosas",
         quantity: 2,
-        estimatedPrice: 3600,
-        totalPrice: 7200,
+        estimatedPrice: convertPesoToUSD(3600), // ~$10.29
+        totalPrice: convertPesoToUSD(7200), // ~$20.57
       },
     ],
     totalParticipants: 8,
-    totalAmount: 26700,
-    myConsumption: 3337,
-    costPerPerson: 3337,
+    totalAmount: convertPesoToUSD(26700), // ~$76.29
+    myConsumption: convertPesoToUSD(3337), // ~$9.53
+    costPerPerson: convertPesoToUSD(3337), // ~$9.53
     status: "active",
-    beCoinsGenerated: 267,
+    beCoinsGenerated: Math.round(convertPesoToUSD(267)), // ~0.76
     createdAt: "2025-01-15T10:00:00.000Z",
     createdBy: "user_1",
     paymentMode: "equal_split",
@@ -101,15 +102,15 @@ export const MOCK_GROUPS: Group[] = [
     location: "Villa Urquiza, CABA",
     deliveryTime: "13:00",
     participantsList: [
-      { id: "creator", name: "Tú (Creador)", email: "tu@email.com" },
+      { id: "creator", name: "Tú (Creador)", instagramUsername: "mi_usuario" },
       {
         id: "p4",
         name: "Roberto Silva",
-        email: "roberto@email.com",
+        instagramUsername: "robertos",
         isPayingForAll: true,
       },
-      { id: "p5", name: "María López", email: "maria@email.com" },
-      { id: "p6", name: "Pedro Díaz", email: "pedro@email.com" },
+      { id: "p5", name: "María López", instagramUsername: "maria_lopez" },
+      { id: "p6", name: "Pedro Díaz", instagramUsername: "pedro_diaz" },
     ],
     participants: 12,
     products: [
@@ -117,23 +118,23 @@ export const MOCK_GROUPS: Group[] = [
         id: "3",
         name: "Carne (3kg)",
         quantity: 1,
-        estimatedPrice: 12000,
-        totalPrice: 12000,
+        estimatedPrice: convertPesoToUSD(12000), // ~$34.29
+        totalPrice: convertPesoToUSD(12000), // ~$34.29
       },
       {
         id: "4",
         name: "Ensaladas",
         quantity: 4,
-        estimatedPrice: 2500,
-        totalPrice: 10000,
+        estimatedPrice: convertPesoToUSD(2500), // ~$7.14
+        totalPrice: convertPesoToUSD(10000), // ~$28.57
       },
     ],
     totalParticipants: 12,
-    totalAmount: 22000,
+    totalAmount: convertPesoToUSD(22000), // ~$62.86
     myConsumption: 0,
     costPerPerson: 0,
     status: "pending_payment",
-    beCoinsGenerated: 220,
+    beCoinsGenerated: Math.round(convertPesoToUSD(220)), // ~0.63
     createdAt: "2025-01-14T08:30:00.000Z",
     createdBy: "user_2",
     paymentMode: "single_payer",
@@ -149,26 +150,26 @@ export const MOCK_GROUPS: Group[] = [
       {
         id: "creator",
         name: "Tú (Creador)",
-        email: "tu@email.com",
-        customAmount: 8000,
+        instagramUsername: "mi_usuario",
+        customAmount: convertPesoToUSD(8000), // ~$22.86
       },
       {
         id: "p7",
         name: "Sofía Torres",
-        email: "sofia@email.com",
-        customAmount: 12000,
+        instagramUsername: "sofia_torres",
+        customAmount: convertPesoToUSD(12000), // ~$34.29
       },
       {
         id: "p8",
         name: "Diego Morales",
-        email: "diego@email.com",
-        customAmount: 6000,
+        instagramUsername: "diego_m",
+        customAmount: convertPesoToUSD(6000), // ~$17.14
       },
       {
         id: "p9",
         name: "Carmen Vega",
-        email: "carmen@email.com",
-        customAmount: 8000,
+        instagramUsername: "carmen_v",
+        customAmount: convertPesoToUSD(8000), // ~$22.86
       },
     ],
     participants: 6,
@@ -177,23 +178,23 @@ export const MOCK_GROUPS: Group[] = [
         id: "5",
         name: "Sushi Variado",
         quantity: 8,
-        estimatedPrice: 4200,
-        totalPrice: 33600,
+        estimatedPrice: convertPesoToUSD(4200), // ~$12.00
+        totalPrice: convertPesoToUSD(33600), // ~$96.00
       },
       {
         id: "6",
         name: "Vino Tinto",
         quantity: 2,
-        estimatedPrice: 3250,
-        totalPrice: 6500,
+        estimatedPrice: convertPesoToUSD(3250), // ~$9.29
+        totalPrice: convertPesoToUSD(6500), // ~$18.57
       },
     ],
     totalParticipants: 6,
-    totalAmount: 40100,
-    myConsumption: 8000,
-    costPerPerson: 5675,
+    totalAmount: convertPesoToUSD(40100), // ~$114.57
+    myConsumption: convertPesoToUSD(8000), // ~$22.86
+    costPerPerson: convertPesoToUSD(5675), // ~$16.21
     status: "completed",
-    beCoinsGenerated: 401,
+    beCoinsGenerated: Math.round(convertPesoToUSD(401)), // ~1.15
     createdAt: "2025-01-10T16:45:00.000Z",
     createdBy: "user_3",
     paymentMode: "custom_amounts",

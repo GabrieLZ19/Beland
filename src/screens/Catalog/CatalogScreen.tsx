@@ -10,7 +10,7 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useCreateGroupStore } from "../../stores/useCreateGroupStore";
 import { ConfirmationAlert } from "../../components/ui/ConfirmationAlert";
-import { BeCoinIcon } from "../../components/icons/BeCoinIcon";
+import { BeCoinsBalance } from "../../components/ui/BeCoinsBalance";
 import * as Haptics from "expo-haptics";
 
 // Hooks
@@ -200,20 +200,10 @@ export const CatalogScreen = () => {
         <View style={containerStyles.headerRow}>
           <View style={containerStyles.headerLeft}>
             <View style={containerStyles.headerTitles}>
-              <Text
-                style={[
-                  containerStyles.headerTitle,
-                  isCreatingGroup && { color: "#FFFFFF" },
-                ]}
-              >
+              <Text style={containerStyles.headerTitle}>
                 {isCreatingGroup ? "Agregando al grupo" : "Catálogo"}
               </Text>
-              <Text
-                style={[
-                  containerStyles.headerSubtitle,
-                  isCreatingGroup && { color: "rgba(255, 255, 255, 0.9)" },
-                ]}
-              >
+              <Text style={containerStyles.headerSubtitle}>
                 {isCreatingGroup
                   ? `${products.length} producto${
                       products.length !== 1 ? "s" : ""
@@ -223,10 +213,11 @@ export const CatalogScreen = () => {
             </View>
           </View>
           {!isCreatingGroup ? (
-            <View style={containerStyles.coinsContainer}>
-              <BeCoinIcon width={20} height={20} />
-              <Text style={containerStyles.coinsText}>470</Text>
-            </View>
+            <BeCoinsBalance
+              size="medium"
+              variant="header"
+              style={containerStyles.coinsContainer}
+            />
           ) : (
             <View style={containerStyles.groupActions}>
               <TouchableOpacity

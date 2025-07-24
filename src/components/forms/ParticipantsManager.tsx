@@ -1,30 +1,37 @@
-import React from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Button } from "../ui/Button";
+import { AddParticipantModal } from "../ui/AddParticipantModal";
 import { Participant } from "../../types";
+import { InstagramUser } from "../../services/instagramService";
 import { formStyles, commonStyles } from "../../styles";
+import { colors } from "../../styles/colors";
 
 interface ParticipantsManagerProps {
   participants: Participant[];
-  newParticipantName: string;
-  newParticipantEmail: string;
-  errors: any;
-  onParticipantNameChange: (text: string) => void;
-  onParticipantEmailChange: (text: string) => void;
-  onAddParticipant: () => void;
+  onAddParticipant: (name: string, instagramUser: InstagramUser) => void;
   onRemoveParticipant: (id: string) => void;
+  participantErrors?: {
+    name?: string;
+    instagram?: string;
+  };
 }
 
 export const ParticipantsManager: React.FC<ParticipantsManagerProps> = ({
   participants,
-  newParticipantName,
-  newParticipantEmail,
-  errors,
-  onParticipantNameChange,
-  onParticipantEmailChange,
   onAddParticipant,
   onRemoveParticipant,
+  participantErrors,
 }) => {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleAddParticipant = (name: string, instagramUser: InstagramUser) => {
+    onAddParticipant(name, instagramUser);
+    // Solo cerrar modal si no hay errores
+    if (!participantErrors?.name && !participantErrors?.instagram) {
+      setShowModal(false);
+    }
+  };
   return (
     <>
       <Text style={commonStyles.cardTitle}>
@@ -41,11 +48,15 @@ export const ParticipantsManager: React.FC<ParticipantsManagerProps> = ({
             <Text style={participantStyles.participantName}>
               {participant.name}
             </Text>
-            {participant.email ? (
+            {participant.instagramUsername ? (
               <Text style={participantStyles.participantEmail}>
-                {participant.email}
+                @{participant.instagramUsername}
               </Text>
-            ) : null}
+            ) : (
+              <Text style={participantStyles.participantEmail}>
+                Sin Instagram
+              </Text>
+            )}
           </View>
           <TouchableOpacity
             style={participantStyles.removeButton}
@@ -58,45 +69,20 @@ export const ParticipantsManager: React.FC<ParticipantsManagerProps> = ({
 
       {/* Agregar participante */}
       <View style={formStyles.addParticipantContainer}>
-        <View style={formStyles.inputGroup}>
-          <Text style={formStyles.inputLabel}>Nombre del participante *</Text>
-          <TextInput
-            style={formStyles.textInput}
-            placeholder="Nombre completo"
-            value={newParticipantName}
-            onChangeText={onParticipantNameChange}
-          />
-          {errors.newParticipantName && (
-            <Text style={commonStyles.errorText}>
-              {errors.newParticipantName}
-            </Text>
-          )}
-        </View>
-        <View style={formStyles.inputGroup}>
-          <Text style={formStyles.inputLabel}>Email (opcional)</Text>
-          <TextInput
-            style={formStyles.textInput}
-            placeholder="email@ejemplo.com"
-            value={newParticipantEmail}
-            onChangeText={onParticipantEmailChange}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          {errors.newParticipantEmail && (
-            <Text style={commonStyles.errorText}>
-              {errors.newParticipantEmail}
-            </Text>
-          )}
-        </View>
         <Button
-          title="Agregar Participante"
-          onPress={onAddParticipant}
+          title="+ Agregar Participante"
+          onPress={() => setShowModal(true)}
           variant="secondary"
         />
-        {errors.participants && (
-          <Text style={commonStyles.errorText}>{errors.participants}</Text>
-        )}
       </View>
+
+      {/* Modal para agregar participante */}
+      <AddParticipantModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        onAddParticipant={handleAddParticipant}
+        errors={participantErrors}
+      />
     </>
   );
 };

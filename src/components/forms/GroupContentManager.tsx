@@ -6,6 +6,7 @@ import {
   TextInput,
   Alert,
   FlatList,
+  Image,
 } from "react-native";
 import { Group, Participant, Product } from "../../types";
 import { useGroupManagement } from "../../hooks/useGroupManagement";
@@ -17,8 +18,11 @@ import {
   EnhancedButton,
   EnhancedInput,
   ConfirmationAlert,
+  AddParticipantModal,
 } from "../ui";
 import { useCustomAlert } from "../../hooks/useCustomAlert";
+import { formatUSDPrice, CURRENCY_CONFIG } from "../../constants";
+import { InstagramUser } from "../../services/instagramService";
 
 interface GroupContentManagerProps {
   group: Group;
@@ -44,12 +48,14 @@ export const GroupContentManager: React.FC<GroupContentManagerProps> = ({
   const { showCustomAlert } = useCustomAlert();
 
   // Estados para agregar nuevos elementos
-  const [newParticipantName, setNewParticipantName] = useState("");
-  const [newParticipantEmail, setNewParticipantEmail] = useState("");
   const [newProductName, setNewProductName] = useState("");
   const [newProductPrice, setNewProductPrice] = useState("");
-  const [showAddParticipant, setShowAddParticipant] = useState(false);
+  const [showAddParticipantModal, setShowAddParticipantModal] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [participantErrors, setParticipantErrors] = useState<{
+    name?: string;
+    instagram?: string;
+  }>({});
 
   // Estados para alertas de confirmación
   const [confirmDelete, setConfirmDelete] = useState<{
@@ -65,46 +71,42 @@ export const GroupContentManager: React.FC<GroupContentManagerProps> = ({
   });
 
   // Funciones para participantes
-  const handleAddParticipant = async () => {
-    if (!newParticipantName.trim()) {
-      showCustomAlert(
-        "Campos requeridos",
-        "Por favor ingresa el nombre del participante",
-        "error"
-      );
+  const handleAddParticipant = async (
+    name: string,
+    instagramUser: InstagramUser
+  ) => {
+    // Limpiar errores previos
+    setParticipantErrors({});
+
+    if (!name.trim()) {
+      setParticipantErrors({ name: "El nombre es requerido" });
       return;
     }
 
-    if (!newParticipantEmail.trim()) {
-      // Email es opcional, no necesita validación si está vacío
-    } else {
-      // Validar formato de email solo si se proporciona
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(newParticipantEmail.trim())) {
-        showCustomAlert(
-          "Email inválido",
-          "Por favor ingresa un email válido o déjalo vacío",
-          "error"
-        );
-        return;
-      }
+    if (!instagramUser) {
+      setParticipantErrors({
+        instagram: "Debes seleccionar un usuario de Instagram",
+      });
+      return;
     }
 
     const newParticipant: Participant = {
       id: generateId(),
-      name: newParticipantName.trim(),
-      email: newParticipantEmail.trim() || "No especificado",
+      name: name.trim(),
+      instagramUsername: instagramUser.username,
+      instagramProfilePic: instagramUser.profile_pic_url,
+      instagramFullName: instagramUser.full_name,
+      isVerified: instagramUser.is_verified,
     };
 
     const updatedGroup = await addParticipant(group.id, newParticipant);
     if (updatedGroup) {
       onGroupUpdated(updatedGroup);
-      setNewParticipantName("");
-      setNewParticipantEmail("");
-      setShowAddParticipant(false);
+      setShowAddParticipantModal(false);
+      setParticipantErrors({});
       showCustomAlert(
         "¡Participante agregado!",
-        `${newParticipant.name} se unió al grupo`,
+        `${newParticipant.name} (@${instagramUser.username}) se unió al grupo`,
         "success"
       );
     }
@@ -247,13 +249,27 @@ export const GroupContentManager: React.FC<GroupContentManagerProps> = ({
   const renderParticipantItem = ({ item }: { item: Participant }) => (
     <View style={styles.participantCard}>
       <View style={styles.participantAvatar}>
-        <Text style={styles.participantAvatarText}>
-          {item.name.charAt(0).toUpperCase()}
-        </Text>
+        {item.instagramProfilePic ? (
+          <Image
+            source={{ uri: item.instagramProfilePic }}
+            style={styles.instagramProfilePic}
+          />
+        ) : (
+          <Text style={styles.participantAvatarText}>
+            {item.name.charAt(0).toUpperCase()}
+          </Text>
+        )}
       </View>
       <View style={styles.participantInfo}>
-        <Text style={styles.participantName}>{item.name}</Text>
-        <Text style={styles.participantEmail}>{item.email}</Text>
+        <View style={styles.participantNameRow}>
+          <Text style={styles.participantName}>{item.name}</Text>
+          {item.isVerified && <Text style={styles.verifiedBadge}>✓</Text>}
+        </View>
+        <Text style={styles.participantEmail}>
+          {item.instagramUsername
+            ? `@${item.instagramUsername}`
+            : "Sin Instagram"}
+        </Text>
         {item.id === "creator" && (
           <View style={styles.creatorBadge}>
             <Text style={styles.creatorBadgeText}>👑 Creador</Text>
@@ -312,7 +328,7 @@ export const GroupContentManager: React.FC<GroupContentManagerProps> = ({
         <View style={styles.productHeaderInfo}>
           <Text style={styles.productName}>{item.name}</Text>
           <Text style={styles.productPricePerUnit}>
-            ${item.estimatedPrice.toLocaleString()} por unidad
+            ${formatUSDPrice(item.estimatedPrice)} por unidad
           </Text>
         </View>
         {!isReadOnly && (
@@ -382,9 +398,11 @@ export const GroupContentManager: React.FC<GroupContentManagerProps> = ({
         <View style={styles.priceSection}>
           <Text style={styles.priceSectionLabel}>TOTAL</Text>
           <View style={styles.totalPriceDisplay}>
-            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={styles.currencySymbol}>
+              {CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL}
+            </Text>
             <Text style={styles.totalPrice}>
-              {(item.estimatedPrice * item.quantity).toLocaleString()}
+              {formatUSDPrice(item.estimatedPrice * item.quantity)}
             </Text>
           </View>
         </View>
@@ -412,60 +430,31 @@ export const GroupContentManager: React.FC<GroupContentManagerProps> = ({
         {!isReadOnly && (
           <EnhancedButton
             title="Agregar Participante"
-            onPress={() => setShowAddParticipant(!showAddParticipant)}
-            variant={showAddParticipant ? "secondary" : "primary"}
-            icon={showAddParticipant ? "✕" : "+"}
+            onPress={() => setShowAddParticipantModal(true)}
+            variant="primary"
+            icon="+"
             style={{ marginTop: 16 }}
           />
         )}
 
-        {showAddParticipant && !isReadOnly && (
-          <View style={styles.addForm}>
-            <EnhancedInput
-              label="Nombre del participante"
-              placeholder="Ej: Juan Pérez"
-              value={newParticipantName}
-              onChangeText={setNewParticipantName}
-              icon="👤"
-              required
-            />
-            <EnhancedInput
-              label="Email del participante (opcional)"
-              placeholder="juan@ejemplo.com"
-              value={newParticipantEmail}
-              onChangeText={setNewParticipantEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              icon="📧"
-            />
-            <View style={styles.addFormButtons}>
-              <EnhancedButton
-                title="Cancelar"
-                onPress={() => {
-                  setShowAddParticipant(false);
-                  setNewParticipantName("");
-                  setNewParticipantEmail("");
-                }}
-                variant="ghost"
-                style={{ flex: 1, marginRight: 8 }}
-              />
-              <EnhancedButton
-                title="Agregar"
-                onPress={handleAddParticipant}
-                loading={loading}
-                style={{ flex: 1, marginLeft: 8 }}
-              />
-            </View>
-          </View>
-        )}
+        {/* Modal para agregar participante */}
+        <AddParticipantModal
+          visible={showAddParticipantModal}
+          onClose={() => {
+            setShowAddParticipantModal(false);
+            setParticipantErrors({});
+          }}
+          onAddParticipant={handleAddParticipant}
+          errors={participantErrors}
+        />
       </EnhancedCard>
 
       {/* Sección de Productos */}
       <EnhancedCard
         title="Productos del Pedido"
-        subtitle={`${
-          group.products.length
-        } productos • Total: $${group.totalAmount.toFixed(2)}`}
+        subtitle={`${group.products.length} productos • Total: ${
+          CURRENCY_CONFIG.CURRENCY_DISPLAY_SYMBOL
+        }${formatUSDPrice(group.totalAmount)}`}
         icon="🛒"
         style={{ marginBottom: 16 }}
       >
@@ -498,7 +487,7 @@ export const GroupContentManager: React.FC<GroupContentManagerProps> = ({
               required
             />
             <EnhancedInput
-              label="Precio estimado"
+              label="Precio estimado (USD)"
               placeholder="0.00"
               value={newProductPrice}
               onChangeText={setNewProductPrice}
@@ -629,6 +618,12 @@ const styles = {
     justifyContent: "center" as const,
     alignItems: "center" as const,
     marginRight: 16,
+    overflow: "hidden" as const,
+  },
+  instagramProfilePic: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   participantAvatarText: {
     fontSize: 18,
@@ -638,11 +633,25 @@ const styles = {
   participantInfo: {
     flex: 1,
   },
+  participantNameRow: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    marginBottom: 4,
+  },
   participantName: {
     fontSize: 16,
     fontWeight: "600" as const,
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginRight: 8,
+  },
+  verifiedBadge: {
+    fontSize: 12,
+    color: "#4CAF50",
+    backgroundColor: "#E8F5E8",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    fontWeight: "bold" as const,
   },
   participantEmail: {
     fontSize: 14,

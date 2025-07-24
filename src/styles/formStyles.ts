@@ -238,4 +238,10 @@ export const formStyles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
   },
+  readOnlyNotice: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    textAlign: "center",
+    fontStyle: "italic",
+  },
 });

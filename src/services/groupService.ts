@@ -34,7 +34,11 @@ export class GroupService {
       location: data.location.trim(),
       deliveryTime: data.deliveryTime.trim(),
       participantsList: [
-        { id: "creator", name: "Tú (Creador)", email: "tu@email.com" },
+        {
+          id: "creator",
+          name: "Tú (Creador)",
+          instagramUsername: "mi_usuario",
+        },
         ...data.participants,
       ],
       participants: totalParticipants,

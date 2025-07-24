@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { productStyles } from "../styles";
 import { AvailableProduct } from "../../../constants/products";
+import { formatUSDPrice } from "../../../constants";
 
 interface ProductCardProps {
   product: AvailableProduct;
@@ -12,14 +13,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onAddToCart,
 }) => {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
   return (
     <View style={productStyles.productCard}>
       <View style={productStyles.productImage} />
@@ -28,7 +21,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <Text style={productStyles.productCategory}>{product.category}</Text>
       <View style={productStyles.productPriceRow}>
         <Text style={productStyles.productPrice}>
-          {formatPrice(product.basePrice)}
+          ${formatUSDPrice(product.basePrice)}
         </Text>
         <TouchableOpacity
           style={productStyles.addToCartButton}

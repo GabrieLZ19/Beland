@@ -1,4 +1,5 @@
 import { colors } from "../../../styles/colors";
+import { formatUSDPrice } from "../../../constants";
 
 export const useGroupsUtils = () => {
   const getStatusColor = (status: string) => {
@@ -29,7 +30,7 @@ export const useGroupsUtils = () => {
 
   const formatAmount = (amount: number | string) => {
     if (typeof amount === "number") {
-      return amount.toLocaleString();
+      return formatUSDPrice(amount);
     }
     return amount;
   };

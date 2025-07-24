@@ -11,6 +11,7 @@ import {
   formatBeCoins,
 } from "../../../business/costCalculations";
 import { productStyles } from "../styles";
+import { formatUSDPrice, CURRENCY_CONFIG } from "../../../constants";
 
 interface ProductsSectionProps {
   products: Product[];
@@ -65,7 +66,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                       {product.category}
                     </Text>
                     <Text style={productStyles.productPricePerUnit}>
-                      ${product.estimatedPrice?.toLocaleString()} por unidad
+                      {formatUSDPrice(product.estimatedPrice)} por unidad
                     </Text>
                   </View>
                 </View>
@@ -118,10 +119,9 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
 
                   <View style={productStyles.productPriceAndRemove}>
                     <Text style={productStyles.productTotalPrice}>
-                      $
-                      {(
+                      {formatUSDPrice(
                         product.estimatedPrice * product.quantity
-                      ).toLocaleString()}
+                      )}
                     </Text>
                     <TouchableOpacity
                       style={productStyles.removeProductButton}

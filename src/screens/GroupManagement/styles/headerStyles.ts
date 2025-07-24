@@ -108,13 +108,13 @@ export const headerStyles = {
     flexDirection: "row" as const,
     justifyContent: "space-between" as const,
     paddingHorizontal: 0,
-    gap: 12,
+    gap: 8, // Reducir espacio entre tarjetas
   },
   statCard: {
     backgroundColor: "rgba(255, 255, 255, 0.95)",
     borderRadius: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    paddingVertical: 16, // Reducir padding vertical
+    paddingHorizontal: 12, // Reducir padding horizontal
     alignItems: "center" as const,
     flex: 1,
     shadowColor: "#000",
@@ -122,27 +122,30 @@ export const headerStyles = {
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    minHeight: 100,
+    minHeight: 95, // Reducir altura mínima
   },
   statIconContainer: {
     backgroundColor: "rgba(248, 141, 42, 0.1)",
     borderRadius: 12,
-    padding: 8,
-    marginBottom: 8,
+    padding: 6, // Reducir padding del icono
+    marginBottom: 6, // Reducir margin bottom
   },
   statIcon: {
-    fontSize: 20,
+    fontSize: 18, // Reducir tamaño del icono
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 16, // Reducir tamaño de fuente
     fontWeight: "700" as const,
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2, // Reducir margin bottom
+    textAlign: "center" as const,
+    numberOfLines: 1,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11, // Reducir tamaño de fuente
     color: colors.textSecondary,
     fontWeight: "500" as const,
     textAlign: "center" as const,
+    numberOfLines: 1,
   },
 };

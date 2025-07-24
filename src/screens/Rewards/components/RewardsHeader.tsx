@@ -1,17 +1,9 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { BeCoinIcon } from "../../../components/icons/BeCoinIcon";
+import { BeCoinsBalance } from "../../../components/ui/BeCoinsBalance";
 import { headerStyles } from "../styles";
 
-interface RewardsHeaderProps {
-  userBalance: number;
-  formatBalance: (balance: number) => string;
-}
-
-export const RewardsHeader: React.FC<RewardsHeaderProps> = ({
-  userBalance,
-  formatBalance,
-}) => {
+export const RewardsHeader: React.FC = () => {
   return (
     <View style={headerStyles.header}>
       <View style={headerStyles.headerTextContainer}>
@@ -20,10 +12,11 @@ export const RewardsHeader: React.FC<RewardsHeaderProps> = ({
           Canjea tus BeCoins por increíbles recompensas
         </Text>
       </View>
-      <View style={headerStyles.coinsDisplay}>
-        <BeCoinIcon width={20} height={20} />
-        <Text style={headerStyles.coinsText}>{formatBalance(userBalance)}</Text>
-      </View>
+      <BeCoinsBalance
+        size="medium"
+        variant="header"
+        style={headerStyles.coinsDisplay}
+      />
     </View>
   );
 };
