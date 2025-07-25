@@ -11,3 +11,4 @@ export { BeCoinsBalance } from "./BeCoinsBalance";
 export { AddParticipantModal } from "./AddParticipantModal";
 export { InstagramSearchInput } from "./InstagramSearchInput";
 export { PaymentWithBeCoins } from "./PaymentWithBeCoins";
+export { LocationPermissionModal } from "./LocationPermissionModal";

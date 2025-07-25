@@ -16,7 +16,11 @@
     "ios": {
       "supportsTablet": true,
       "statusBarStyle": "light",
-      "statusBarBackgroundColor": "#F88D2A"
+      "statusBarBackgroundColor": "#F88D2A",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Esta aplicación necesita acceso a tu ubicación para encontrar puntos de reciclaje cercanos.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Esta aplicación necesita acceso a tu ubicación para encontrar puntos de reciclaje cercanos."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -28,7 +32,8 @@
         "backgroundColor": "#F88D2A",
         "hidden": false,
         "translucent": false
-      }
+      },
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

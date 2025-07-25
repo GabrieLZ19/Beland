@@ -18,9 +18,15 @@ export const useDashboardNavigation = () => {
     console.log("Coins pressed");
   };
 
+  const handleRecyclingMapPress = () => {
+    // Navegar a la pantalla completa del mapa de reciclaje
+    navigation.navigate("RecyclingMap" as never);
+  };
+
   return {
     handleMenuPress,
     handleViewHistory,
     handleCoinsPress,
+    handleRecyclingMapPress,
   };
 };

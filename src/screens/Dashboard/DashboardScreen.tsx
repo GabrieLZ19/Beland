@@ -3,12 +3,17 @@ import { View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "../../components/layout/AppHeader";
 import { RecyclingCard, RewardsCard, ActivitySection } from "./components";
+import { RecyclingMapWidget } from "../../components/RecyclingMapWidget";
 import { useDashboardNavigation, useDashboardData } from "./hooks";
 import { containerStyles } from "./styles";
 
 export const DashboardScreen = () => {
-  const { handleMenuPress, handleViewHistory, handleCoinsPress } =
-    useDashboardNavigation();
+  const {
+    handleMenuPress,
+    handleViewHistory,
+    handleCoinsPress,
+    handleRecyclingMapPress,
+  } = useDashboardNavigation();
   const { userStats, activities } = useDashboardData();
 
   return (
@@ -29,6 +34,9 @@ export const DashboardScreen = () => {
 
           {/* Recompensas */}
           <RewardsCard />
+
+          {/* Mapa de Puntos de Reciclaje */}
+          <RecyclingMapWidget onPress={handleRecyclingMapPress} />
 
           {/* Última actividad */}
           <ActivitySection
