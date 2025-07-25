@@ -129,7 +129,11 @@ export const PaymentModeManager: React.FC<PaymentModeManagerProps> = ({
                 group.paymentMode === option.id &&
                   formStyles.radioButtonSelected,
               ]}
-            />
+            >
+              {group.paymentMode === option.id && (
+                <View style={formStyles.radioButtonInner} />
+              )}
+            </View>
             <Text
               style={[
                 formStyles.optionTitle,
@@ -173,7 +177,11 @@ export const PaymentModeManager: React.FC<PaymentModeManagerProps> = ({
                 selectedPayingUser === participant.id &&
                   formStyles.radioButtonSelected,
               ]}
-            />
+            >
+              {selectedPayingUser === participant.id && (
+                <View style={formStyles.radioButtonInner} />
+              )}
+            </View>
             <View style={formStyles.participantInfo}>
               <Text style={formStyles.participantName}>{participant.name}</Text>
               <Text style={formStyles.participantEmail}>

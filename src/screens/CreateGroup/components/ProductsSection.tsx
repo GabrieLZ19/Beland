@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Card } from "../../../components/ui/Card";
 import { BeCoinIcon } from "../../../components/icons/BeCoinIcon";
 import { Product, Participant } from "../../../types";
@@ -56,7 +56,15 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
               <View key={product.id} style={productStyles.selectedProductItem}>
                 <View style={productStyles.productMainInfo}>
                   <View style={productStyles.productImageContainer}>
-                    <Text style={productStyles.productEmoji}>📦</Text>
+                    {product.image ? (
+                      <Image
+                        source={{ uri: product.image }}
+                        style={productStyles.productImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Text style={productStyles.productEmoji}>📦</Text>
+                    )}
                   </View>
                   <View style={productStyles.productDetails}>
                     <Text style={productStyles.productName}>

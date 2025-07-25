@@ -17,6 +17,7 @@ export interface Product {
   totalPrice?: number;
   category?: string;
   basePrice?: number;
+  image?: string;
 }
 
 export interface Group {

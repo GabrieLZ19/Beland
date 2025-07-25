@@ -102,6 +102,7 @@ export const CatalogScreen = () => {
         totalPrice: product.basePrice,
         category: product.category,
         basePrice: product.basePrice,
+        image: product.image,
       };
       addProduct(newProduct);
 
@@ -144,6 +145,7 @@ export const CatalogScreen = () => {
         totalPrice: selectedProduct.basePrice,
         category: selectedProduct.category,
         basePrice: selectedProduct.basePrice,
+        image: selectedProduct.image,
       };
       addProduct(newProduct);
     }

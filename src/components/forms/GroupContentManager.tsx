@@ -320,10 +320,20 @@ export const GroupContentManager: React.FC<GroupContentManagerProps> = ({
 
   const renderProductItem = ({ item }: { item: Product }) => (
     <View style={styles.modernProductCard}>
-      {/* Header de la tarjeta con ícono y nombre */}
+      {/* Header de la tarjeta con imagen y nombre */}
       <View style={styles.productHeader}>
         <View style={styles.productIconContainer}>
-          <Text style={styles.productEmoji}>{getProductEmoji(item.name)}</Text>
+          {item.image ? (
+            <Image
+              source={{ uri: item.image }}
+              style={styles.productImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.productEmoji}>
+              {getProductEmoji(item.name)}
+            </Text>
+          )}
         </View>
         <View style={styles.productHeaderInfo}>
           <Text style={styles.productName}>{item.name}</Text>
@@ -703,6 +713,11 @@ const styles = {
   },
   productEmoji: {
     fontSize: 32,
+  },
+  productImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
   },
   productHeaderInfo: {
     flex: 1,

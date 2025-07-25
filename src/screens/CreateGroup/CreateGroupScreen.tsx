@@ -5,6 +5,7 @@ import { CustomAlert } from "../../components/ui/CustomAlert";
 import { ConfirmationAlert } from "../../components/ui/ConfirmationAlert";
 import { WaveBottomGray } from "../../components/icons";
 import { GroupService } from "../../services/groupService";
+import { InstagramUser } from "../../services/instagramService";
 import { Participant } from "../../types";
 import { useCreateGroupStore } from "../../stores/useCreateGroupStore";
 import * as Haptics from "expo-haptics";
@@ -70,6 +71,10 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
     clearError,
     setError,
   } = useCreateGroupForm();
+
+  // Estado para el usuario de Instagram seleccionado
+  const [selectedInstagramUser, setSelectedInstagramUser] =
+    useState<InstagramUser | null>(null);
 
   const {
     showTimeModal,
@@ -185,7 +190,23 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
 
   const handleParticipantInstagramChange = (text: string) => {
     setNewParticipantInstagram(text);
+    // Si hay un usuario seleccionado y se cambia el texto, limpiarlo
+    if (selectedInstagramUser) {
+      setSelectedInstagramUser(null);
+    }
     if (errors.newParticipantInstagram && text.trim()) {
+      clearError("newParticipantInstagram");
+    }
+  };
+
+  const handleInstagramUserSelect = (user: InstagramUser) => {
+    setSelectedInstagramUser(user);
+    setNewParticipantInstagram(user.username);
+    // Auto-completar el nombre si está vacío
+    if (!newParticipantName.trim()) {
+      setNewParticipantName(user.full_name);
+    }
+    if (errors.newParticipantInstagram) {
       clearError("newParticipantInstagram");
     }
   };
@@ -219,36 +240,59 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
     }
   };
 
-  // Agregar participante
+  // Agregar participante (usando la misma validación que GroupContentManager)
   const handleAddParticipant = () => {
-    const nameError = validateParticipantName(newParticipantName);
+    // Limpiar errores previos
+    clearError("newParticipantName");
+    clearError("newParticipantInstagram");
+
+    // Validar nombre
+    if (!newParticipantName.trim()) {
+      setError("newParticipantName", "El nombre es requerido");
+      return;
+    }
+
+    // Validar usuario de Instagram seleccionado
+    if (!selectedInstagramUser) {
+      setError(
+        "newParticipantInstagram",
+        "Debes seleccionar un usuario de Instagram válido"
+      );
+      return;
+    }
+
+    // Verificar que no esté duplicado
     const existingUsernames = participants
       .map((p) => p.instagramUsername || "")
       .filter((username) => username);
-    const instagramError = validateParticipantInstagram(
-      newParticipantInstagram,
-      existingUsernames
-    );
 
-    if (nameError) setError("newParticipantName", nameError);
-    if (instagramError) setError("newParticipantInstagram", instagramError);
+    if (
+      existingUsernames.some(
+        (u) => u.toLowerCase() === selectedInstagramUser.username.toLowerCase()
+      )
+    ) {
+      setError(
+        "newParticipantInstagram",
+        "Este usuario de Instagram ya está registrado"
+      );
+      return;
+    }
 
-    if (nameError || instagramError) return;
-
-    clearError("newParticipantName");
-    clearError("newParticipantInstagram");
     clearError("participants");
 
     const newParticipant: Participant = {
       id: Date.now().toString(),
       name: formatPersonName(newParticipantName),
-      instagramUsername: newParticipantInstagram.trim()
-        ? newParticipantInstagram.trim().replace(/^@/, "")
-        : undefined,
+      instagramUsername: selectedInstagramUser.username,
+      instagramProfilePic: selectedInstagramUser.profile_pic_url,
+      instagramFullName: selectedInstagramUser.full_name,
+      isVerified: selectedInstagramUser.is_verified,
     };
+
     addParticipant(newParticipant);
     setNewParticipantName("");
     setNewParticipantInstagram("");
+    setSelectedInstagramUser(null);
   };
 
   // Productos con feedback háptico
@@ -405,6 +449,7 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
             errors={errors}
             onParticipantNameChange={handleParticipantNameChange}
             onParticipantInstagramChange={handleParticipantInstagramChange}
+            onInstagramUserSelect={handleInstagramUserSelect}
             onAddParticipant={handleAddParticipant}
             onRemoveParticipant={handleRemoveParticipant}
           />

@@ -50,6 +50,18 @@ export const GroupManagementHeader: React.FC<GroupManagementHeaderProps> = ({
         </View>
 
         <View style={headerStyles.groupDetailsContainer}>
+          {currentGroup?.description && (
+            <View style={headerStyles.detailItemFull}>
+              <Text style={headerStyles.detailIcon}>📝</Text>
+              <Text
+                style={headerStyles.groupDescription}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {currentGroup.description}
+              </Text>
+            </View>
+          )}
           <View style={headerStyles.detailItemFull}>
             <Text style={headerStyles.detailIcon}>📍</Text>
             <Text

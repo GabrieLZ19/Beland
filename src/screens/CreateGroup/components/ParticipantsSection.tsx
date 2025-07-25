@@ -1,9 +1,12 @@
 import React from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { Card } from "../../../components/ui/Card";
+import { InstagramSearchInput } from "../../../components/ui/InstagramSearchInput";
 import { Participant } from "../../../types";
 import { FormErrors } from "../../../business/validation/groupValidation";
 import { participantStyles } from "../styles";
+
+import { InstagramUser } from "../../../services/instagramService";
 
 interface ParticipantsSectionProps {
   participants: Participant[];
@@ -12,6 +15,7 @@ interface ParticipantsSectionProps {
   errors: FormErrors;
   onParticipantNameChange: (text: string) => void;
   onParticipantInstagramChange: (text: string) => void;
+  onInstagramUserSelect: (user: InstagramUser) => void;
   onAddParticipant: () => void;
   onRemoveParticipant: (id: string) => void;
 }
@@ -23,6 +27,7 @@ export const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
   errors,
   onParticipantNameChange,
   onParticipantInstagramChange,
+  onInstagramUserSelect,
   onAddParticipant,
   onRemoveParticipant,
 }) => {
@@ -138,15 +143,14 @@ export const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
             </View>
             <View style={participantStyles.inputContent}>
               <Text style={participantStyles.modernInputLabel}>
-                Instagram (opcional)
+                Instagram *
               </Text>
-              <TextInput
-                style={participantStyles.modernTextInput}
-                placeholder="@usuario_instagram"
+              <InstagramSearchInput
                 value={newParticipantInstagram}
                 onChangeText={onParticipantInstagramChange}
-                autoCapitalize="none"
-                placeholderTextColor="#A0A0A0"
+                onUserSelect={onInstagramUserSelect}
+                placeholder="@usuario_instagram"
+                error={errors.newParticipantInstagram}
               />
             </View>
           </View>

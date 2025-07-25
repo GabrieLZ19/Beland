@@ -77,6 +77,12 @@ export const productStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+    overflow: "hidden",
+  },
+  productImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   productEmoji: {
     fontSize: 24,

@@ -65,10 +65,19 @@ export const AddParticipantModal: React.FC<AddParticipantModalProps> = ({
   }, [visible]);
 
   const handleAdd = () => {
-    if (name.trim() && selectedInstagramUser) {
-      onAddParticipant(name.trim(), selectedInstagramUser);
-      // Solo cerrar si no hay errores (esto se manejará desde el padre)
+    // Validar que todos los campos requeridos estén completos
+    if (!name.trim()) {
+      // Si no hay nombre, el error se manejará desde el componente padre
+      return;
     }
+
+    if (!selectedInstagramUser) {
+      // Si no hay usuario de Instagram seleccionado, no proceder
+      return;
+    }
+
+    onAddParticipant(name.trim(), selectedInstagramUser);
+    // Solo cerrar si no hay errores (esto se manejará desde el padre)
   };
 
   const handleClose = () => {

@@ -102,6 +102,14 @@ export const headerStyles = {
     color: colors.textSecondary,
     fontWeight: "500" as const,
   },
+  groupDescription: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    fontWeight: "500" as const,
+    flex: 1,
+    lineHeight: 20,
+    fontStyle: "italic" as const,
+  },
 
   // Stats container
   statsContainer: {

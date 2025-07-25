@@ -4,7 +4,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
+  ScrollView,
   Image,
   StyleSheet,
   ActivityIndicator,
@@ -162,14 +162,16 @@ export const InstagramSearchInput: React.FC<InstagramSearchInputProps> = ({
         style={[styles.suggestionsContainer, { height: animatedHeight }]}
       >
         {showSuggestions && (
-          <FlatList
-            data={suggestions}
-            renderItem={renderSuggestionItem}
-            keyExtractor={(item) => item.username}
+          <ScrollView
             style={styles.suggestionsList}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-          />
+            nestedScrollEnabled={true}
+          >
+            {suggestions.map((item) => (
+              <View key={item.username}>{renderSuggestionItem({ item })}</View>
+            ))}
+          </ScrollView>
         )}
       </Animated.View>
     </View>
