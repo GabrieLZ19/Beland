@@ -162,7 +162,7 @@ export const RecyclingMapWidget: React.FC<RecyclingMapWidgetProps> = ({
   const renderMapContent = () => {
     if (Platform.OS === "web") {
       return (
-        <PhoneMapSVGWeb width={120} height={120}>
+        <PhoneMapSVGWeb width={800} height={800}>
           <MiniMapContentWeb />
         </PhoneMapSVGWeb>
       );

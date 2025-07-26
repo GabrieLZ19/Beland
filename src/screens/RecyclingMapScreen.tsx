@@ -368,8 +368,6 @@ export const RecyclingMapScreen = () => {
       <style>
         body, html { 
           height: 100%; 
-          margin: 0; 
-          padding: 0; 
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         #map { 
@@ -804,7 +802,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    padding: 16,
+    padding: 10,
     backgroundColor: colors.cardBackground,
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
@@ -864,7 +862,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
   mapContainer: {
-    height: 280, // Aumentado para mejor visualización del mapa
+    height: 200, // Aumentado para mejor visualización del mapa
     marginHorizontal: 20,
     marginVertical: 12,
     borderRadius: 16,
