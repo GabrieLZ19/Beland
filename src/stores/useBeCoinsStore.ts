@@ -1,5 +1,47 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+
+// Import dinámico de AsyncStorage solo en mobile
+let AsyncStorage: any = undefined;
+if (typeof navigator !== "undefined" && navigator.product === "ReactNative") {
+  try {
+    AsyncStorage = require("@react-native-async-storage/async-storage").default;
+  } catch {}
+}
+
+import { useEffect } from "react";
+
+// Helpers de persistencia multiplataforma
+const STORAGE_KEY = "becoins-store";
+
+function isWeb() {
+  return (
+    typeof window !== "undefined" && typeof window.localStorage !== "undefined"
+  );
+}
+
+function saveState(state: Partial<BeCoinsState>) {
+  const data = JSON.stringify(state);
+  if (isWeb()) {
+    window.localStorage.setItem(STORAGE_KEY, data);
+  } else if (AsyncStorage) {
+    AsyncStorage.setItem(STORAGE_KEY, data);
+  }
+}
+
+async function loadState(): Promise<Partial<BeCoinsState> | null> {
+  try {
+    if (isWeb()) {
+      const data = window.localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : null;
+    } else if (AsyncStorage) {
+      const data = await AsyncStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 // Constantes para BeCoins
 export const BECOIN_VALUE_USD = 0.05; // 5 centavos de dólar por BeCoin
@@ -75,199 +117,224 @@ const generateTransactionId = () => {
   return `becoin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
-export const useBeCoinsStore = create<BeCoinsStore>()(
-  persist(
-    (set, get) => ({
-      // Estado inicial
+const initialState: BeCoinsState = {
+  balance: INITIAL_BECOIN_BALANCE,
+  totalEarned: INITIAL_BECOIN_BALANCE,
+  totalSpent: 0,
+  transactions: [
+    {
+      id: generateTransactionId(),
+      type: "earned",
+      amount: INITIAL_BECOIN_BALANCE,
+      description: "Balance inicial de BeCoins",
+      category: "initial",
+      timestamp: new Date(),
+    },
+  ],
+};
+
+import { useState } from "react";
+let hasLoaded = false;
+
+export const useBeCoinsStore = create<BeCoinsStore>((set, get) => ({
+  ...initialState,
+
+  // Acciones principales
+  spendBeCoins: (
+    amount: number,
+    description: string,
+    category: BeCoinsTransaction["category"],
+    relatedId?: string
+  ) => {
+    const state = get();
+
+    if (amount <= 0) {
+      console.warn("La cantidad a gastar debe ser mayor a 0");
+      return false;
+    }
+
+    if (state.balance < amount) {
+      console.warn(
+        `Balance insuficiente. Balance actual: ${state.balance}, Intentando gastar: ${amount}`
+      );
+      return false;
+    }
+
+    const transaction: BeCoinsTransaction = {
+      id: generateTransactionId(),
+      type: "spent",
+      amount,
+      description,
+      category,
+      timestamp: new Date(),
+      relatedId,
+    };
+
+    set((state) => {
+      const newState = {
+        balance: state.balance - amount,
+        totalSpent: state.totalSpent + amount,
+        transactions: [transaction, ...state.transactions],
+      };
+      saveState({ ...state, ...newState });
+      return newState;
+    });
+
+    return true;
+  },
+
+  earnBeCoins: (
+    amount: number,
+    description: string,
+    category: BeCoinsTransaction["category"],
+    relatedId?: string
+  ) => {
+    if (amount <= 0) {
+      console.warn("La cantidad a ganar debe ser mayor a 0");
+      return;
+    }
+
+    const transaction: BeCoinsTransaction = {
+      id: generateTransactionId(),
+      type: "earned",
+      amount,
+      description,
+      category,
+      timestamp: new Date(),
+      relatedId,
+    };
+
+    set((state) => {
+      const newState = {
+        balance: state.balance + amount,
+        totalEarned: state.totalEarned + amount,
+        transactions: [transaction, ...state.transactions],
+      };
+      saveState({ ...state, ...newState });
+      return newState;
+    });
+  },
+
+  refundBeCoins: (amount: number, description: string, relatedId?: string) => {
+    if (amount <= 0) {
+      console.warn("La cantidad a reembolsar debe ser mayor a 0");
+      return;
+    }
+
+    const transaction: BeCoinsTransaction = {
+      id: generateTransactionId(),
+      type: "refund",
+      amount,
+      description,
+      category: "group_payment",
+      timestamp: new Date(),
+      relatedId,
+    };
+
+    set((state) => {
+      const newState = {
+        balance: state.balance + amount,
+        totalSpent: Math.max(0, state.totalSpent - amount),
+        transactions: [transaction, ...state.transactions],
+      };
+      saveState({ ...state, ...newState });
+      return newState;
+    });
+  },
+
+  // Utilidades
+  hasEnoughBeCoins: (amount: number) => {
+    return get().balance >= amount;
+  },
+
+  getBeCoinsInUSD: (amount?: number) => {
+    const beCoins = amount ?? get().balance;
+    return beCoins * BECOIN_VALUE_USD;
+  },
+
+  getUSDInBeCoins: (usdAmount: number) => {
+    return Math.ceil(usdAmount / BECOIN_VALUE_USD);
+  },
+
+  getTransactionHistory: () => {
+    return get().transactions;
+  },
+
+  resetBalance: () => {
+    const resetState: BeCoinsState = {
       balance: INITIAL_BECOIN_BALANCE,
       totalEarned: INITIAL_BECOIN_BALANCE,
       totalSpent: 0,
       transactions: [
         {
           id: generateTransactionId(),
-          type: "earned",
+          type: "earned" as const,
           amount: INITIAL_BECOIN_BALANCE,
-          description: "Balance inicial de BeCoins",
+          description: "Balance reiniciado",
           category: "initial",
           timestamp: new Date(),
         },
       ],
+    };
+    set({ ...resetState });
+    saveState(resetState);
+  },
 
-      // Acciones principales
-      spendBeCoins: (
-        amount: number,
-        description: string,
-        category: BeCoinsTransaction["category"],
-        relatedId?: string
-      ) => {
-        const state = get();
+  // Acciones específicas
+  payWithBeCoins: (
+    usdAmount: number,
+    description: string,
+    relatedId?: string
+  ) => {
+    const beCoinsNeeded = get().getUSDInBeCoins(usdAmount);
+    return get().spendBeCoins(
+      beCoinsNeeded,
+      `${description} (${usdAmount.toFixed(2)} USD)`,
+      "group_payment",
+      relatedId
+    );
+  },
 
-        if (amount <= 0) {
-          console.warn("La cantidad a gastar debe ser mayor a 0");
-          return false;
-        }
+  redeemReward: (beCoinsCost: number, rewardName: string, rewardId: string) => {
+    return get().spendBeCoins(
+      beCoinsCost,
+      `Canje de premio: ${rewardName}`,
+      "reward",
+      rewardId
+    );
+  },
 
-        if (state.balance < amount) {
-          console.warn(
-            `Balance insuficiente. Balance actual: ${state.balance}, Intentando gastar: ${amount}`
-          );
-          return false;
-        }
+  purchaseWithBeCoins: (
+    beCoinsCost: number,
+    productName: string,
+    productId: string
+  ) => {
+    return get().spendBeCoins(
+      beCoinsCost,
+      `Compra con BeCoins: ${productName}`,
+      "catalog",
+      productId
+    );
+  },
+}));
 
-        const transaction: BeCoinsTransaction = {
-          id: generateTransactionId(),
-          type: "spent",
-          amount,
-          description,
-          category,
-          timestamp: new Date(),
-          relatedId,
-        };
-
-        set((state) => ({
-          balance: state.balance - amount,
-          totalSpent: state.totalSpent + amount,
-          transactions: [transaction, ...state.transactions],
+// Hook para hidratar el store al iniciar y evitar sobrescribir el estado persistido
+export function useBeCoinsStoreHydration() {
+  const [isLoaded, setIsLoaded] = useState(false);
+  useEffect(() => {
+    if (hasLoaded) return;
+    hasLoaded = true;
+    (async () => {
+      const loaded = await loadState();
+      if (loaded && loaded.transactions) {
+        loaded.transactions = loaded.transactions.map((t: any) => ({
+          ...t,
+          timestamp: new Date(t.timestamp),
         }));
-
-        return true;
-      },
-
-      earnBeCoins: (
-        amount: number,
-        description: string,
-        category: BeCoinsTransaction["category"],
-        relatedId?: string
-      ) => {
-        if (amount <= 0) {
-          console.warn("La cantidad a ganar debe ser mayor a 0");
-          return;
-        }
-
-        const transaction: BeCoinsTransaction = {
-          id: generateTransactionId(),
-          type: "earned",
-          amount,
-          description,
-          category,
-          timestamp: new Date(),
-          relatedId,
-        };
-
-        set((state) => ({
-          balance: state.balance + amount,
-          totalEarned: state.totalEarned + amount,
-          transactions: [transaction, ...state.transactions],
-        }));
-      },
-
-      refundBeCoins: (
-        amount: number,
-        description: string,
-        relatedId?: string
-      ) => {
-        if (amount <= 0) {
-          console.warn("La cantidad a reembolsar debe ser mayor a 0");
-          return;
-        }
-
-        const transaction: BeCoinsTransaction = {
-          id: generateTransactionId(),
-          type: "refund",
-          amount,
-          description,
-          category: "group_payment",
-          timestamp: new Date(),
-          relatedId,
-        };
-
-        set((state) => ({
-          balance: state.balance + amount,
-          totalSpent: Math.max(0, state.totalSpent - amount),
-          transactions: [transaction, ...state.transactions],
-        }));
-      },
-
-      // Utilidades
-      hasEnoughBeCoins: (amount: number) => {
-        return get().balance >= amount;
-      },
-
-      getBeCoinsInUSD: (amount?: number) => {
-        const beCoins = amount ?? get().balance;
-        return beCoins * BECOIN_VALUE_USD;
-      },
-
-      getUSDInBeCoins: (usdAmount: number) => {
-        return Math.ceil(usdAmount / BECOIN_VALUE_USD);
-      },
-
-      getTransactionHistory: () => {
-        return get().transactions;
-      },
-
-      resetBalance: () => {
-        set({
-          balance: INITIAL_BECOIN_BALANCE,
-          totalEarned: INITIAL_BECOIN_BALANCE,
-          totalSpent: 0,
-          transactions: [
-            {
-              id: generateTransactionId(),
-              type: "earned",
-              amount: INITIAL_BECOIN_BALANCE,
-              description: "Balance reiniciado",
-              category: "initial",
-              timestamp: new Date(),
-            },
-          ],
-        });
-      },
-
-      // Acciones específicas
-      payWithBeCoins: (
-        usdAmount: number,
-        description: string,
-        relatedId?: string
-      ) => {
-        const beCoinsNeeded = get().getUSDInBeCoins(usdAmount);
-        return get().spendBeCoins(
-          beCoinsNeeded,
-          `${description} (${usdAmount.toFixed(2)} USD)`,
-          "group_payment",
-          relatedId
-        );
-      },
-
-      redeemReward: (
-        beCoinsCost: number,
-        rewardName: string,
-        rewardId: string
-      ) => {
-        return get().spendBeCoins(
-          beCoinsCost,
-          `Canje de premio: ${rewardName}`,
-          "reward",
-          rewardId
-        );
-      },
-
-      purchaseWithBeCoins: (
-        beCoinsCost: number,
-        productName: string,
-        productId: string
-      ) => {
-        return get().spendBeCoins(
-          beCoinsCost,
-          `Compra con BeCoins: ${productName}`,
-          "catalog",
-          productId
-        );
-      },
-    }),
-    {
-      name: "becoins-storage",
-      version: 1,
-    }
-  )
-);
+        useBeCoinsStore.setState((prev) => ({ ...prev, ...loaded }));
+      }
+      setIsLoaded(true);
+    })();
+  }, []);
+  return isLoaded;
+}

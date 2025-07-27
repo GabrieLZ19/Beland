@@ -1,4 +1,6 @@
 import React, { useRef, useState } from "react";
+import { ActivityIndicator } from "react-native";
+import { useBeCoinsStoreHydration } from "./src/stores/useBeCoinsStore";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -13,6 +15,8 @@ import { useSystemBars } from "./src/hooks/useImmersiveMode";
 import { colors } from "./src/styles/colors";
 
 export default function App() {
+  // Hidratar el store de BeCoins antes de renderizar la app
+  const isBeCoinsLoaded = useBeCoinsStoreHydration();
   // Hook mejorado que maneja edge-to-edge automáticamente
   useSystemBars();
 
@@ -36,10 +40,39 @@ export default function App() {
   // Solo mostrar el botón QR si no estamos en la pantalla QR
   const shouldShowQRButton = currentRoute !== "QR";
 
+  if (!isBeCoinsLoaded) {
+    return (
+      <SafeAreaProvider>
+        <View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
+          <StatusBar style="light" />
+          <NavigationContainer
+            ref={navigationRef}
+            onStateChange={onNavigationStateChange}
+          >
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: colors.background,
+              }}
+            >
+              <ActivityIndicator
+                size="large"
+                color={colors.primary || "#000"}
+              />
+            </View>
+          </NavigationContainer>
+        </View>
+      </SafeAreaProvider>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
         <StatusBar style="light" />
+        {/* @ts-expect-error Forzamos el tipado para evitar error de children en NavigationContainer */}
         <NavigationContainer
           ref={navigationRef}
           onStateChange={onNavigationStateChange}
