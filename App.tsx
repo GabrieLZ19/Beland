@@ -37,8 +37,9 @@ export default function App() {
     }
   };
 
-  // Solo mostrar el botón QR si no estamos en la pantalla QR
-  const shouldShowQRButton = currentRoute !== "QR";
+  // Solo mostrar el botón QR si no estamos en la pantalla QR ni en RecyclingMap
+  const shouldShowQRButton =
+    currentRoute !== "QR" && currentRoute !== "RecyclingMap";
 
   if (!isBeCoinsLoaded) {
     return (
@@ -72,7 +73,7 @@ export default function App() {
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
         <StatusBar style="light" />
-        {/* @ts-expect-error Forzamos el tipado para evitar error de children en NavigationContainer */}
+
         <NavigationContainer
           ref={navigationRef}
           onStateChange={onNavigationStateChange}

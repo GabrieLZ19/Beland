@@ -21,17 +21,6 @@ import {
   GroupIcon,
 } from "../icons";
 
-// Pantallas temporales para la navegación
-const ProfileScreen = () => (
-  <SafeAreaView style={styles.tempScreen}>
-    <View style={styles.tempContent}>
-      <ProfileIcon width={64} height={64} color={colors.textSecondary} />
-      <Text style={styles.tempTitle}>Perfil</Text>
-      <Text style={styles.tempText}>Próximamente disponible</Text>
-    </View>
-  </SafeAreaView>
-);
-
 const Tab = createBottomTabNavigator();
 
 export const MainTabNavigator = () => {

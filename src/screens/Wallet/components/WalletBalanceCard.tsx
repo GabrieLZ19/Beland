@@ -24,7 +24,7 @@ export const WalletBalanceCard: React.FC<WalletBalanceCardProps> = ({
             </Text>
           </View>
           <Text style={walletCardStyles.estimatedValue}>
-            Total estimado: {walletData.estimatedValue}
+            Total estimado: ${walletData.estimatedValue} USD
           </Text>
         </View>
         <View style={walletCardStyles.avatarContainer}>
