@@ -2,6 +2,21 @@ import { Group } from "../types";
 
 type StorageListener = () => void;
 
+let AsyncStorage: any = undefined;
+if (typeof navigator !== "undefined" && navigator.product === "ReactNative") {
+  try {
+    AsyncStorage = require("@react-native-async-storage/async-storage").default;
+  } catch {}
+}
+
+const STORAGE_KEY = "groups-storage";
+
+function isWeb() {
+  return (
+    typeof window !== "undefined" && typeof window.localStorage !== "undefined"
+  );
+}
+
 class GroupStorageService {
   private groups: Group[] = [];
   private listeners: StorageListener[] = [];
@@ -23,8 +38,33 @@ class GroupStorageService {
     this.listeners.forEach((listener) => listener());
   }
 
-  addGroup(group: Group): void {
+  async persistGroups() {
+    const data = JSON.stringify(this.groups);
+    if (isWeb()) {
+      window.localStorage.setItem(STORAGE_KEY, data);
+    } else if (AsyncStorage) {
+      await AsyncStorage.setItem(STORAGE_KEY, data);
+    }
+  }
+
+  async hydrateGroups() {
+    let data = null;
+    if (isWeb()) {
+      data = window.localStorage.getItem(STORAGE_KEY);
+    } else if (AsyncStorage) {
+      data = await AsyncStorage.getItem(STORAGE_KEY);
+    }
+    if (data) {
+      try {
+        this.groups = JSON.parse(data);
+      } catch {}
+    }
+    this.notifyListeners();
+  }
+
+  async addGroup(group: Group) {
     this.groups.push(group);
+    await this.persistGroups();
     this.notifyListeners();
   }
 
@@ -36,20 +76,22 @@ class GroupStorageService {
     return this.groups.find((group) => group.id === id);
   }
 
-  updateGroup(id: string, updates: Partial<Group>): boolean {
+  async updateGroup(id: string, updates: Partial<Group>): Promise<boolean> {
     const index = this.groups.findIndex((group) => group.id === id);
     if (index !== -1) {
       this.groups[index] = { ...this.groups[index], ...updates };
+      await this.persistGroups();
       this.notifyListeners();
       return true;
     }
     return false;
   }
 
-  deleteGroup(id: string): boolean {
+  async deleteGroup(id: string): Promise<boolean> {
     const index = this.groups.findIndex((group) => group.id === id);
     if (index !== -1) {
       this.groups.splice(index, 1);
+      await this.persistGroups();
       this.notifyListeners();
       return true;
     }
@@ -66,10 +108,15 @@ class GroupStorageService {
     return this.groups.filter((group) => group.status === "completed");
   }
 
-  clear(): void {
+  async clear() {
     this.groups = [];
+    await this.persistGroups();
     this.notifyListeners();
   }
 }
 
 export const groupStorage = new GroupStorageService();
+// Hidratar grupos al iniciar la app
+if (typeof window !== "undefined" || AsyncStorage) {
+  groupStorage.hydrateGroups();
+}

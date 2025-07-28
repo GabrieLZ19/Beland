@@ -252,24 +252,16 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
       return;
     }
 
-    // Validar usuario de Instagram seleccionado
-    if (!selectedInstagramUser) {
-      setError(
-        "newParticipantInstagram",
-        "Debes seleccionar un usuario de Instagram válido"
-      );
-      return;
-    }
-
+    // Permitir agregar cualquier usuario de Instagram (texto libre)
     // Verificar que no esté duplicado
+    const usernameToAdd = newParticipantInstagram.trim().replace(/^@/, "");
     const existingUsernames = participants
-      .map((p) => p.instagramUsername || "")
+      .map((p) => (p.instagramUsername || "").toLowerCase())
       .filter((username) => username);
 
     if (
-      existingUsernames.some(
-        (u) => u.toLowerCase() === selectedInstagramUser.username.toLowerCase()
-      )
+      usernameToAdd &&
+      existingUsernames.includes(usernameToAdd.toLowerCase())
     ) {
       setError(
         "newParticipantInstagram",
@@ -283,10 +275,10 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
     const newParticipant: Participant = {
       id: Date.now().toString(),
       name: formatPersonName(newParticipantName),
-      instagramUsername: selectedInstagramUser.username,
-      instagramProfilePic: selectedInstagramUser.profile_pic_url,
-      instagramFullName: selectedInstagramUser.full_name,
-      isVerified: selectedInstagramUser.is_verified,
+      instagramUsername: usernameToAdd || undefined,
+      instagramProfilePic: undefined,
+      instagramFullName: undefined,
+      isVerified: false,
     };
 
     addParticipant(newParticipant);
@@ -399,14 +391,9 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
         "success"
       );
 
+      // No limpiar el store ni la persistencia automáticamente
+      // El usuario puede limpiar el grupo manualmente si lo desea
       setTimeout(() => {
-        setGroupName("");
-        setDescription("");
-        setLocation("");
-        setDeliveryTime("");
-        clearGroup();
-        setNewParticipantName("");
-        setNewParticipantInstagram("");
         navigation.goBack();
       }, 2000);
     } catch (error) {
@@ -459,6 +446,7 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
             products={products}
             participants={participants}
             errors={errors}
+            location={location}
             onUpdateProductQuantity={handleUpdateProductQuantity}
             onRemoveProduct={handleRemoveProduct}
             onNavigateToCatalog={handleNavigateToCatalog}

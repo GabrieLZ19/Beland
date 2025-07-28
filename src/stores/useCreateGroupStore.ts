@@ -1,7 +1,11 @@
 import { create } from "zustand";
+// Eliminada la persistencia del formulario de creación de grupo
+import { useEffect, useState } from "react";
 import { Product, Participant } from "../types";
 
 interface CreateGroupState {
+  consumo: "mucho" | "poco" | "normal";
+  setConsumo: (consumo: "mucho" | "poco" | "normal") => void;
   // Datos del grupo
   groupName: string;
   description: string;
@@ -43,10 +47,15 @@ const initialState = {
   participants: [],
   products: [],
   isCreatingGroup: false,
+  consumo: "normal" as "mucho" | "poco" | "normal",
 };
 
 export const useCreateGroupStore = create<CreateGroupState>((set, get) => ({
   ...initialState,
+
+  setConsumo: (consumo) => {
+    set({ consumo });
+  },
 
   // Acciones para el grupo
   setGroupName: (name: string) => set({ groupName: name }),
@@ -56,15 +65,11 @@ export const useCreateGroupStore = create<CreateGroupState>((set, get) => ({
 
   // Acciones para participantes
   addParticipant: (participant: Participant) =>
-    set((state) => ({
-      participants: [...state.participants, participant],
-    })),
-
+    set((state) => ({ participants: [...state.participants, participant] })),
   removeParticipant: (id: string) =>
     set((state) => ({
       participants: state.participants.filter((p) => p.id !== id),
     })),
-
   updateParticipant: (id: string, participantUpdate: Partial<Participant>) =>
     set((state) => ({
       participants: state.participants.map((p) =>
@@ -75,14 +80,12 @@ export const useCreateGroupStore = create<CreateGroupState>((set, get) => ({
   // Acciones para productos
   addProduct: (product: Product) =>
     set((state) => {
-      // Verificar si el producto ya existe
       const existingProductIndex = state.products.findIndex(
         (p) => p.id === product.id
       );
-
+      let updatedProducts;
       if (existingProductIndex >= 0) {
-        // Si existe, aumentar la cantidad
-        const updatedProducts = [...state.products];
+        updatedProducts = [...state.products];
         updatedProducts[existingProductIndex] = {
           ...updatedProducts[existingProductIndex],
           quantity:
@@ -92,38 +95,26 @@ export const useCreateGroupStore = create<CreateGroupState>((set, get) => ({
               product.quantity) *
             (updatedProducts[existingProductIndex].estimatedPrice || 0),
         };
-        return { products: updatedProducts };
       } else {
-        // Si no existe, agregarlo
-        return { products: [...state.products, product] };
+        updatedProducts = [...state.products, product];
       }
+      return { products: updatedProducts };
     }),
-
   removeProduct: (id: string) =>
-    set((state) => ({
-      products: state.products.filter((p) => p.id !== id),
-    })),
-
+    set((state) => ({ products: state.products.filter((p) => p.id !== id) })),
   updateProductQuantity: (id: string, quantity: number) =>
     set((state) => {
+      let updatedProducts;
       if (quantity <= 0) {
-        // Si la cantidad es 0 o menor, eliminar el producto
-        return {
-          products: state.products.filter((p) => p.id !== id),
-        };
-      }
-
-      return {
-        products: state.products.map((p) =>
+        updatedProducts = state.products.filter((p) => p.id !== id);
+      } else {
+        updatedProducts = state.products.map((p) =>
           p.id === id
-            ? {
-                ...p,
-                quantity,
-                totalPrice: quantity * (p.estimatedPrice || 0),
-              }
+            ? { ...p, quantity, totalPrice: quantity * (p.estimatedPrice || 0) }
             : p
-        ),
-      };
+        );
+      }
+      return { products: updatedProducts };
     }),
 
   // Acciones de control
@@ -131,6 +122,7 @@ export const useCreateGroupStore = create<CreateGroupState>((set, get) => ({
     set({ isCreatingGroup: isCreating }),
 
   clearGroup: () => set(initialState),
-
   resetToInitialState: () => set(initialState),
 }));
+
+// Ya no se hidrata el store de creación de grupo porque no se persiste

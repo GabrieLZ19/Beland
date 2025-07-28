@@ -15,7 +15,7 @@ import { useSystemBars } from "./src/hooks/useImmersiveMode";
 import { colors } from "./src/styles/colors";
 
 export default function App() {
-  // Hidratar el store de BeCoins antes de renderizar la app
+  // Hidratar solo el store de BeCoins antes de renderizar la app
   const isBeCoinsLoaded = useBeCoinsStoreHydration();
   // Hook mejorado que maneja edge-to-edge automáticamente
   useSystemBars();

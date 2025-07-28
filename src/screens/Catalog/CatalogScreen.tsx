@@ -147,7 +147,10 @@ export const CatalogScreen = () => {
         basePrice: selectedProduct.basePrice,
         image: selectedProduct.image,
       };
+      console.log("[Grupo] Creando grupo con producto:", newProduct);
       addProduct(newProduct);
+    } else {
+      console.log("[Grupo] No hay producto seleccionado al crear grupo");
     }
 
     // Navegar a la pantalla de crear grupo

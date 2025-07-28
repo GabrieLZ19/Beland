@@ -17,6 +17,7 @@ interface ProductsSectionProps {
   products: Product[];
   participants: Participant[];
   errors: FormErrors;
+  location?: string;
   onUpdateProductQuantity: (id: string, quantity: number) => void;
   onRemoveProduct: (id: string) => void;
   onNavigateToCatalog: () => void;
@@ -26,6 +27,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
   products,
   participants,
   errors,
+  location,
   onUpdateProductQuantity,
   onRemoveProduct,
   onNavigateToCatalog,
@@ -100,7 +102,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
 
         {products.length > 0 ? (
           <View style={productStyles.selectedProducts}>
-            {products.map((product) => (
+            {products.map((product, idx) => (
               <View key={product.id} style={productStyles.selectedProductItem}>
                 <View style={productStyles.productMainInfo}>
                   <View style={productStyles.productImageContainer}>
@@ -128,50 +130,57 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                 </View>
 
                 <View style={productStyles.productControls}>
-                  <View style={productStyles.quantityControls}>
-                    <TouchableOpacity
-                      style={[
-                        productStyles.quantityButton,
-                        product.quantity <= 1 &&
-                          productStyles.quantityButtonDisabled,
-                      ]}
-                      onPress={() =>
-                        onUpdateProductQuantity(
-                          product.id,
-                          product.quantity - 1
-                        )
-                      }
-                      activeOpacity={0.8}
-                      disabled={product.quantity <= 1}
-                    >
-                      <Text
+                  {/* Solo mostrar controles de cantidad para el primer producto si la ubicación incluye 'domicilio' */}
+                  {(idx !== 0 ||
+                    (idx === 0 &&
+                      typeof location === "string" &&
+                      location &&
+                      location.toLowerCase().includes("domicilio"))) && (
+                    <View style={productStyles.quantityControls}>
+                      <TouchableOpacity
                         style={[
-                          productStyles.quantityButtonText,
+                          productStyles.quantityButton,
                           product.quantity <= 1 &&
-                            productStyles.quantityButtonTextDisabled,
+                            productStyles.quantityButtonDisabled,
                         ]}
+                        onPress={() =>
+                          onUpdateProductQuantity(
+                            product.id,
+                            product.quantity - 1
+                          )
+                        }
+                        activeOpacity={0.8}
+                        disabled={product.quantity <= 1}
                       >
-                        −
-                      </Text>
-                    </TouchableOpacity>
-                    <View style={productStyles.quantityDisplayContainer}>
-                      <Text style={productStyles.quantityText}>
-                        {product.quantity}
-                      </Text>
+                        <Text
+                          style={[
+                            productStyles.quantityButtonText,
+                            product.quantity <= 1 &&
+                              productStyles.quantityButtonTextDisabled,
+                          ]}
+                        >
+                          −
+                        </Text>
+                      </TouchableOpacity>
+                      <View style={productStyles.quantityDisplayContainer}>
+                        <Text style={productStyles.quantityText}>
+                          {product.quantity}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        style={productStyles.quantityButton}
+                        onPress={() =>
+                          onUpdateProductQuantity(
+                            product.id,
+                            product.quantity + 1
+                          )
+                        }
+                        activeOpacity={0.8}
+                      >
+                        <Text style={productStyles.quantityButtonText}>+</Text>
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity
-                      style={productStyles.quantityButton}
-                      onPress={() =>
-                        onUpdateProductQuantity(
-                          product.id,
-                          product.quantity + 1
-                        )
-                      }
-                      activeOpacity={0.8}
-                    >
-                      <Text style={productStyles.quantityButtonText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
+                  )}
 
                   <View style={productStyles.productPriceAndRemove}>
                     <Text style={productStyles.productTotalPrice}>

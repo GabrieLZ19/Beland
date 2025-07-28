@@ -34,21 +34,7 @@ export const DeliveryModal: React.FC<DeliveryModalProps> = ({
           </View>
 
           <View style={modalStyles.modalOptions}>
-            <TouchableOpacity
-              style={modalStyles.optionButton}
-              onPress={onSelectPickup}
-            >
-              <View style={modalStyles.optionIcon}>
-                <Text style={modalStyles.optionIconText}>👥</Text>
-              </View>
-              <View style={modalStyles.optionTextContainer}>
-                <Text style={modalStyles.optionTitle}>Juntada Circular</Text>
-                <Text style={modalStyles.optionDescription}>
-                  Únete a una juntada circular y compra en grupo
-                </Text>
-              </View>
-            </TouchableOpacity>
-
+            {/* Opción de Envío a domicilio primero */}
             <TouchableOpacity
               style={modalStyles.optionButton}
               onPress={onSelectDelivery}
@@ -60,6 +46,24 @@ export const DeliveryModal: React.FC<DeliveryModalProps> = ({
                 <Text style={modalStyles.optionTitle}>Envío a domicilio</Text>
                 <Text style={modalStyles.optionDescription}>
                   Recibe tu producto en la comodidad de tu hogar
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Opción de Juntada Circular con explicación y su icono */}
+            <TouchableOpacity
+              style={modalStyles.optionButton}
+              onPress={onSelectPickup}
+            >
+              <View style={modalStyles.optionIcon}>
+                <Text style={modalStyles.optionIconText}>👥</Text>
+              </View>
+              <View style={modalStyles.optionTextContainer}>
+                <Text style={modalStyles.optionTitle}>Juntada Circular</Text>
+                <Text style={modalStyles.optionDescription}>
+                  Compra en grupo y accede a mejores precios y beneficios. Solo
+                  pagas lo que consumes. ¡Ideal para compartir con amigos o
+                  vecinos!
                 </Text>
               </View>
             </TouchableOpacity>

@@ -5,6 +5,7 @@ import { InstagramSearchInput } from "../../../components/ui/InstagramSearchInpu
 import { Participant } from "../../../types";
 import { FormErrors } from "../../../business/validation/groupValidation";
 import { participantStyles } from "../styles";
+import { useCreateGroupStore } from "../../../stores/useCreateGroupStore";
 
 import { InstagramUser } from "../../../services/instagramService";
 
@@ -31,6 +32,9 @@ export const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
   onAddParticipant,
   onRemoveParticipant,
 }) => {
+  const consumo = useCreateGroupStore((s) => s.consumo);
+  const setConsumo = useCreateGroupStore((s) => s.setConsumo);
+
   return (
     <Card style={participantStyles.modernCard}>
       <View style={participantStyles.cardHeader}>
@@ -45,6 +49,135 @@ export const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
             Invita a tus amigos a la juntada circular
           </Text>
         </View>
+      </View>
+
+      {/* Selector de consumo */}
+      <View
+        style={{
+          marginBottom: 18,
+          padding: 14,
+          backgroundColor: "#F8F9FA",
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: "#E9ECEF",
+          alignItems: "center",
+        }}
+      >
+        <Text
+          style={{
+            fontWeight: "700",
+            fontSize: 15,
+            marginBottom: 10,
+            color: "#222",
+            textAlign: "center",
+          }}
+        >
+          ¿Cuánto quieren consumir en la juntada?
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 6,
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              minWidth: 70,
+              paddingHorizontal: 10,
+              backgroundColor: consumo === "poco" ? "#ffe5e0" : "#fff",
+              borderColor: consumo === "poco" ? "#ff7043" : "#E9ECEF",
+              borderWidth: 2,
+              borderRadius: 16,
+              marginHorizontal: 4,
+              paddingVertical: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onPress={() => setConsumo("poco")}
+            activeOpacity={0.85}
+          >
+            <Text
+              style={{
+                color: "#ff7043",
+                fontWeight: consumo === "poco" ? "800" : "500",
+                fontSize: 14,
+                textAlign: "center",
+              }}
+            >
+              Poco
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              minWidth: 90,
+              paddingHorizontal: 10,
+              backgroundColor: consumo === "normal" ? "#e0f7fa" : "#fff",
+              borderColor: consumo === "normal" ? "#00bcd4" : "#E9ECEF",
+              borderWidth: 2,
+              borderRadius: 16,
+              marginHorizontal: 4,
+              paddingVertical: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onPress={() => setConsumo("normal")}
+            activeOpacity={0.85}
+          >
+            <Text
+              style={{
+                color: "#00bcd4",
+                fontWeight: consumo === "normal" ? "800" : "500",
+                fontSize: 14,
+                textAlign: "center",
+              }}
+            >
+              Más o menos
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              minWidth: 70,
+              paddingHorizontal: 10,
+              backgroundColor: consumo === "mucho" ? "#e8f5e9" : "#fff",
+              borderColor: consumo === "mucho" ? "#43a047" : "#E9ECEF",
+              borderWidth: 2,
+              borderRadius: 16,
+              marginHorizontal: 4,
+              paddingVertical: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onPress={() => setConsumo("mucho")}
+            activeOpacity={0.85}
+          >
+            <Text
+              style={{
+                color: "#43a047",
+                fontWeight: consumo === "mucho" ? "800" : "500",
+                fontSize: 14,
+                textAlign: "center",
+              }}
+            >
+              Mucho
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Text
+          style={{
+            fontSize: 13,
+            color: "#444",
+            marginTop: 4,
+            textAlign: "center",
+            fontWeight: "600",
+          }}
+        >
+          Consignación:{" "}
+          <Text style={{ fontWeight: "400" }}>
+            Solo pagan lo que consumen. ¡Pidan sin miedo!
+          </Text>
+        </Text>
       </View>
 
       {/* Participante actual (usuario) */}
@@ -145,20 +278,17 @@ export const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
               <Text style={participantStyles.modernInputLabel}>
                 Instagram *
               </Text>
-              <InstagramSearchInput
+              <TextInput
+                style={participantStyles.modernTextInput}
+                placeholder="@usuario_instagram"
                 value={newParticipantInstagram}
                 onChangeText={onParticipantInstagramChange}
-                onUserSelect={onInstagramUserSelect}
-                placeholder="@usuario_instagram"
-                error={errors.newParticipantInstagram}
+                placeholderTextColor="#A0A0A0"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
           </View>
-          {errors.newParticipantInstagram && (
-            <Text style={participantStyles.modernErrorText}>
-              {errors.newParticipantInstagram}
-            </Text>
-          )}
         </View>
 
         <TouchableOpacity
