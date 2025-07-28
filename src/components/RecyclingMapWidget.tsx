@@ -26,13 +26,12 @@ export const RecyclingMapWidget: React.FC<RecyclingMapWidgetProps> = ({
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const handlePress = async () => {
     if (Platform.OS === "web") {
-      Alert.alert(
-        "Funcionalidad de Mapa",
-        "Esta funcionalidad está optimizada para dispositivos móviles. ¡Prueba la app en tu teléfono para la mejor experiencia!"
-      );
+      // En web, solo ejecuta onPress (la navegación la maneja el contenedor)
+      onPress?.();
       return;
     }
 
+    // --- MOBILE: Validación completa de permisos y errores ---
     try {
       // Verificar si ya tiene permisos
       const hasPermission = await LocationService.hasLocationPermission();
@@ -162,7 +161,7 @@ export const RecyclingMapWidget: React.FC<RecyclingMapWidgetProps> = ({
   const renderMapContent = () => {
     if (Platform.OS === "web") {
       return (
-        <PhoneMapSVGWeb width={800} height={800}>
+        <PhoneMapSVGWeb width={300} height={300}>
           <MiniMapContentWeb />
         </PhoneMapSVGWeb>
       );

@@ -8,17 +8,19 @@ interface PhoneMapSVGWebProps {
 }
 
 export const PhoneMapSVGWeb: React.FC<PhoneMapSVGWebProps> = ({
-  width = 120,
-  height = 120,
+  width = 160,
+  height = 320,
   children,
 }) => {
   const phoneWidth = width;
   const phoneHeight = height;
 
-  // Calcular dimensiones proporcionales de la pantalla
-  const screenPadding = phoneWidth * 0.2; // 20% de padding
-  const screenWidth = phoneWidth - screenPadding;
-  const screenHeight = phoneHeight * 0.6; // 60% de la altura
+  // Proporciones más realistas para web
+  const frameWidth = phoneWidth * 0.56;
+  const frameHeight = phoneHeight * 0.88;
+  const screenMargin = frameWidth * 0.08;
+  const screenWidth = frameWidth - screenMargin * 2;
+  const screenHeight = frameHeight - screenMargin * 2.2;
 
   return (
     <View
@@ -30,27 +32,35 @@ export const PhoneMapSVGWeb: React.FC<PhoneMapSVGWebProps> = ({
         alignItems: "center",
       }}
     >
-      {/* Base circular verde */}
+      {/* Base circular verde más sutil */}
       <View
         style={{
           position: "absolute",
-          width: phoneWidth,
-          height: phoneHeight,
-          borderRadius: phoneWidth / 2,
-          backgroundColor: "#7DA244",
+          width: phoneWidth * 1.1,
+          height: phoneWidth * 1.1,
+          borderRadius: (phoneWidth * 1.1) / 2,
+          backgroundColor: "#7DA24422",
+          top: phoneHeight * 0.08,
+          left: (phoneWidth - phoneWidth * 1.1) / 2,
         }}
       />
 
       {/* Marco del teléfono */}
       <View
         style={{
-          width: phoneWidth * 0.7,
-          height: phoneHeight * 0.85,
+          width: frameWidth,
+          height: frameHeight,
           backgroundColor: "#DF8C37",
-          borderRadius: 12,
+          borderRadius: 22,
           justifyContent: "center",
           alignItems: "center",
           position: "relative",
+          borderWidth: 3,
+          borderColor: "#B97A2A",
+          shadowColor: "#000",
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 4,
         }}
       >
         {/* Pantalla del teléfono */}
@@ -59,9 +69,10 @@ export const PhoneMapSVGWeb: React.FC<PhoneMapSVGWebProps> = ({
             width: screenWidth,
             height: screenHeight,
             backgroundColor: "#B1E4F9",
-            borderRadius: 8,
+            borderRadius: 14,
             overflow: "hidden",
             position: "relative",
+            marginTop: screenMargin,
           }}
         >
           {/* Contenido del mapa */}
@@ -72,53 +83,46 @@ export const PhoneMapSVGWeb: React.FC<PhoneMapSVGWebProps> = ({
         <View
           style={{
             position: "absolute",
-            bottom: 8,
-            width: 20,
-            height: 20,
-            borderRadius: 10,
+            bottom: 10,
+            width: 28,
+            height: 28,
+            borderRadius: 14,
             backgroundColor: "#DFEAEF",
+            borderWidth: 1,
+            borderColor: "#B0B0B0",
           }}
         />
       </View>
 
-      {/* Medalla dorada */}
+      {/* Botones laterales pegados al marco */}
       <View
         style={{
           position: "absolute",
-          bottom: 5,
-          right: 15,
-          width: 24,
-          height: 24,
-          borderRadius: 12,
-          backgroundColor: "#FAB400",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontSize: 12, color: "#FFFFFF" }}>🏆</Text>
-      </View>
-
-      {/* Botones laterales */}
-      <View
-        style={{
-          position: "absolute",
-          right: -3,
-          top: phoneHeight * 0.3,
-          width: 6,
-          height: 15,
+          right: (phoneWidth - frameWidth) / 2 - 7,
+          top: phoneHeight * 0.36,
+          width: 12,
+          height: 32,
           backgroundColor: "#3D4951",
-          borderRadius: 3,
+          borderTopLeftRadius: 6,
+          borderBottomLeftRadius: 6,
+          borderTopRightRadius: 8,
+          borderBottomRightRadius: 8,
+          zIndex: 2,
         }}
       />
       <View
         style={{
           position: "absolute",
-          right: -3,
-          top: phoneHeight * 0.45,
-          width: 6,
-          height: 25,
+          right: (phoneWidth - frameWidth) / 2 - 7,
+          top: phoneHeight * 0.52,
+          width: 12,
+          height: 44,
           backgroundColor: "#3D4951",
-          borderRadius: 3,
+          borderTopLeftRadius: 6,
+          borderBottomLeftRadius: 6,
+          borderTopRightRadius: 8,
+          borderBottomRightRadius: 8,
+          zIndex: 2,
         }}
       />
     </View>

@@ -105,10 +105,16 @@ export const BasicGroupInfo: React.FC<BasicGroupInfoProps> = ({
               <TextInput
                 style={[formStyles.modernTextInput, formStyles.locationInput]}
                 placeholder="Toca para seleccionar"
-                value={location}
+                value={
+                  location && location.length > 50
+                    ? location.slice(0, 50) + "…"
+                    : location
+                }
                 editable={false}
                 placeholderTextColor="#A0A0A0"
                 pointerEvents="none"
+                multiline
+                numberOfLines={2}
               />
               <View style={formStyles.locationInputIcon}>
                 <Text style={formStyles.locationIconText}>🗺️</Text>

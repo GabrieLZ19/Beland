@@ -32,6 +32,54 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
 }) => {
   return (
     <>
+      {/* Enlace al catálogo */}
+      <Card style={productStyles.modernCard}>
+        <View style={productStyles.cardHeader}>
+          <View style={productStyles.iconContainer}>
+            <Text style={productStyles.cardIcon}>🛍️</Text>
+          </View>
+          <View style={productStyles.cardHeaderText}>
+            <Text style={productStyles.cardTitle}>Agregar Productos</Text>
+            <Text style={productStyles.cardSubtitle}>
+              Explora nuestro catálogo completo de productos circulares
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={productStyles.modernCatalogButton}
+          onPress={onNavigateToCatalog}
+          activeOpacity={0.8}
+        >
+          <View style={productStyles.catalogButtonContent}>
+            <Text style={productStyles.catalogButtonIcon}>🛒</Text>
+            <View style={productStyles.catalogButtonTextContainer}>
+              <Text style={productStyles.modernCatalogButtonText}>
+                Ir al Catálogo
+              </Text>
+              <Text style={productStyles.catalogButtonSubtext}>
+                Descubre productos únicos
+              </Text>
+            </View>
+            <Text style={productStyles.catalogButtonArrow}>→</Text>
+          </View>
+        </TouchableOpacity>
+
+        {products.length === 0 && (
+          <View style={productStyles.modernCatalogHint}>
+            <Text style={productStyles.catalogHintIcon}>💡</Text>
+            <Text style={productStyles.modernCatalogHintText}>
+              Presiona el botón "+" de cualquier producto y selecciona "Crear
+              juntada circular"
+            </Text>
+          </View>
+        )}
+
+        {errors.products && (
+          <Text style={productStyles.modernErrorText}>{errors.products}</Text>
+        )}
+      </Card>
+
       {/* Productos */}
       <Card style={productStyles.modernCard}>
         <View style={productStyles.cardHeader}>
@@ -168,54 +216,6 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
           <Text style={productStyles.noProductsText}>
             No has seleccionado productos aún
           </Text>
-        )}
-      </Card>
-
-      {/* Enlace al catálogo */}
-      <Card style={productStyles.modernCard}>
-        <View style={productStyles.cardHeader}>
-          <View style={productStyles.iconContainer}>
-            <Text style={productStyles.cardIcon}>🛍️</Text>
-          </View>
-          <View style={productStyles.cardHeaderText}>
-            <Text style={productStyles.cardTitle}>Agregar Productos</Text>
-            <Text style={productStyles.cardSubtitle}>
-              Explora nuestro catálogo completo de productos circulares
-            </Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={productStyles.modernCatalogButton}
-          onPress={onNavigateToCatalog}
-          activeOpacity={0.8}
-        >
-          <View style={productStyles.catalogButtonContent}>
-            <Text style={productStyles.catalogButtonIcon}>🛒</Text>
-            <View style={productStyles.catalogButtonTextContainer}>
-              <Text style={productStyles.modernCatalogButtonText}>
-                Ir al Catálogo
-              </Text>
-              <Text style={productStyles.catalogButtonSubtext}>
-                Descubre productos únicos
-              </Text>
-            </View>
-            <Text style={productStyles.catalogButtonArrow}>→</Text>
-          </View>
-        </TouchableOpacity>
-
-        {products.length === 0 && (
-          <View style={productStyles.modernCatalogHint}>
-            <Text style={productStyles.catalogHintIcon}>💡</Text>
-            <Text style={productStyles.modernCatalogHintText}>
-              Presiona el botón "+" de cualquier producto y selecciona "Crear
-              juntada circular"
-            </Text>
-          </View>
-        )}
-
-        {errors.products && (
-          <Text style={productStyles.modernErrorText}>{errors.products}</Text>
         )}
       </Card>
     </>

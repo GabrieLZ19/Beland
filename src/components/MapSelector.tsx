@@ -113,86 +113,15 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       <style>
-        body, html { 
-          height: 100%; 
-          margin: 0; 
-          padding: 0; 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        #map { 
-          height: 100%; 
-          width: 100%;
-        }
-        .header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 20px;
-          text-align: center;
-          z-index: 1000;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .location-prompt {
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: white;
-          padding: 30px;
-          border-radius: 20px;
-          text-align: center;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-          z-index: 1001;
-          max-width: 320px;
-          width: 90%;
-        }
-        .gps-icon {
-          font-size: 48px;
-          margin-bottom: 15px;
-        }
-        .enable-gps-btn {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 25px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          width: 100%;
-          margin: 10px 0;
-        }
-        .instructions {
-          position: fixed;
-          bottom: 20px;
-          left: 20px;
-          right: 20px;
-          background: white;
-          padding: 20px;
-          border-radius: 15px;
-          box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-          z-index: 1000;
-          text-align: center;
-        }
-        .confirm-btn {
-          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 25px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          width: 100%;
-          margin-top: 10px;
-        }
-        .confirm-btn:disabled {
-          background: #ccc;
-          cursor: not-allowed;
-        }
+        body, html { height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        #map { height: 100%; width: 100%; }
+        .header { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .location-prompt { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1001; max-width: 320px; width: 90%; }
+        .gps-icon { font-size: 48px; margin-bottom: 15px; }
+        .enable-gps-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 25px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin: 10px 0; }
+        .instructions { position: fixed; bottom: 20px; left: 20px; right: 20px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000; text-align: center; }
+        .confirm-btn { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; border: none; padding: 12px 24px; border-radius: 25px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; }
+        .confirm-btn:disabled { background: #ccc; cursor: not-allowed; }
       </style>
     </head>
     <body>
@@ -200,160 +129,162 @@ export const MapSelector: React.FC<MapSelectorProps> = ({
         <h3>📍 Selecciona tu ubicación</h3>
         <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Toca en el mapa para seleccionar tu ubicación</p>
       </div>
-      
       <div id="location-prompt" class="location-prompt">
         <div class="gps-icon">🎯</div>
         <h3>Encuentra tu ubicación</h3>
         <p>Para una mejor experiencia, vamos a ubicarte en el mapa automáticamente.</p>
-        <button onclick="requestLocation()" class="enable-gps-btn">
-          🛰️ Activar ubicación
-        </button>
-        <button onclick="initMapManually()" class="enable-gps-btn" style="background: transparent; color: #667eea; border: 2px solid #667eea;">
-          📍 Seleccionar manualmente
-        </button>
+        <button onclick="requestLocation()" class="enable-gps-btn">🛰️ Activar ubicación</button>
+        <button onclick="showManualInput()" class="enable-gps-btn" style="background: transparent; color: #667eea; border: 2px solid #667eea;">✏️ Ingresar manualmente</button>
       </div>
-      
+      <div id="manual-input-container" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000; background: rgba(255,255,255,0.98); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="width: 100%; max-width: 340px; padding: 24px 16px; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); display: flex; flex-direction: column; align-items: center;">
+          <input id="manual-address" type="text" placeholder="Ingresá tu dirección o lugar..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 17px; margin-bottom: 14px; outline: none;" autofocus />
+          <button onclick="geocodeManualAddress()" class="enable-gps-btn" style="margin-bottom: 10px; width: 100%;">Buscar en el mapa</button>
+          <div id="manual-error" style="color: #e53e3e; font-size: 15px; margin-bottom: 8px; min-height: 18px;"></div>
+        </div>
+      </div>
       <div id="map" style="display: none;"></div>
-      
       <div id="instructions" class="instructions" style="display: none;">
-        <p><strong>🎯 Toca en el mapa</strong> para seleccionar tu ubicación</p>
+        <p><strong>🎯 Toca en el mapa</strong> o <strong>busca una dirección</strong> para seleccionar tu ubicación</p>
         <p id="selected-address">Ninguna ubicación seleccionada</p>
-        <button id="confirm-btn" class="confirm-btn" disabled onclick="confirmLocation()">
-          ✓ Confirmar esta ubicación
-        </button>
+        <button id="confirm-btn" class="confirm-btn" disabled onclick="confirmLocation()">✓ Confirmar esta ubicación</button>
       </div>
-
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
       <script>
-        let map;
-        let marker;
-        let selectedLocation = null;
+        window._leafletMap = null;
+        window.marker = null;
+        window.selectedLocation = null;
+        // Al cargar, solo mostrar el prompt
+        document.getElementById('location-prompt').style.display = 'block';
+        document.getElementById('manual-input-container').style.display = 'none';
+        document.getElementById('map').style.display = 'none';
+        document.getElementById('instructions').style.display = 'none';
 
         function requestLocation() {
-          document.getElementById('location-prompt').innerHTML = 
-            '<div class="gps-icon">🛰️</div><h3>Activando GPS...</h3><p>Usando GPS nativo para mayor precisión...</p>';
-          
-          // En lugar de usar navigator.geolocation, enviar mensaje a React Native
-          const message = JSON.stringify({
-            type: 'requestNativeLocation'
-          });
-          
+          document.getElementById('location-prompt').innerHTML = '<div class="gps-icon">🛰️</div><h3>Activando GPS...</h3><p>Usando GPS nativo para mayor precisión...</p>';
+          const message = JSON.stringify({ type: 'requestNativeLocation' });
           if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(message);
           }
         }
-
-        function initMapManually() {
-          const defaultLat = -34.6118;
-          const defaultLng = -58.3960;
-          
+        function showManualInput() {
           document.getElementById('location-prompt').style.display = 'none';
-          document.getElementById('map').style.display = 'block';
-          document.getElementById('instructions').style.display = 'block';
-          
-          initMapWithLocation(defaultLat, defaultLng);
+          document.getElementById('manual-input-container').style.display = 'flex';
         }
-
+        function geocodeManualAddress() {
+          const address = document.getElementById('manual-address').value;
+          const errorDiv = document.getElementById('manual-error');
+          errorDiv.textContent = '';
+          if (!address.trim()) {
+            errorDiv.textContent = 'Por favor, ingresa una dirección.';
+            return;
+          }
+          errorDiv.textContent = 'Buscando dirección...';
+          fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address))
+            .then(response => response.json())
+            .then(results => {
+              if (results && results.length > 0) {
+                const result = results[0];
+                document.getElementById('manual-input-container').style.display = 'none';
+                document.getElementById('location-prompt').style.display = 'none';
+                document.getElementById('map').style.display = 'block';
+                document.getElementById('instructions').style.display = 'block';
+                // Crear o reutilizar el mapa
+                if (!window._leafletMap) {
+                  window._leafletMap = L.map('map').setView([parseFloat(result.lat), parseFloat(result.lon)], 15);
+                  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(window._leafletMap);
+                } else {
+                  window._leafletMap.setView([parseFloat(result.lat), parseFloat(result.lon)], 15);
+                }
+                // Quitar marcador anterior si existe
+                if (window.marker) { window._leafletMap.removeLayer(window.marker); }
+                window.marker = L.marker([parseFloat(result.lat), parseFloat(result.lon)]).addTo(window._leafletMap);
+                window.selectedLocation = { lat: parseFloat(result.lat), lng: parseFloat(result.lon), address: result.display_name };
+                document.getElementById('selected-address').innerHTML = '📍 ' + result.display_name;
+                document.getElementById('confirm-btn').disabled = false;
+                // Habilitar selección en el mapa
+                window._leafletMap.off();
+                window._leafletMap.on('click', function(e) {
+                  if (window.marker) { window._leafletMap.removeLayer(window.marker); }
+                  window.marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(window._leafletMap);
+                  window.selectedLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
+                  document.getElementById('selected-address').innerHTML = 'Ubicación seleccionada ✓';
+                  document.getElementById('confirm-btn').disabled = false;
+                  fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + e.latlng.lat + '&lon=' + e.latlng.lng)
+                    .then(response => response.json())
+                    .then(data => {
+                      if (data && data.display_name) {
+                        document.getElementById('selected-address').innerHTML = '📍 ' + data.display_name;
+                        window.selectedLocation.address = data.display_name;
+                      }
+                    })
+                    .catch(error => { console.error('Error en geocodificación:', error); });
+                });
+              } else {
+                errorDiv.textContent = 'No se encontró la dirección ingresada.';
+              }
+            })
+            .catch(() => { errorDiv.textContent = 'Error buscando la dirección.'; });
+        }
         function initMapWithLocation(lat, lng) {
-          map = L.map('map').setView([lat, lng], 15);
-          
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-          }).addTo(map);
-          
-          map.on('click', function(e) {
-            if (marker) {
-              map.removeLayer(marker);
-            }
-            
-            marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
-            
-            selectedLocation = {
-              lat: e.latlng.lat,
-              lng: e.latlng.lng
-            };
-            
+          if (!window._leafletMap) {
+            window._leafletMap = L.map('map').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(window._leafletMap);
+          } else {
+            window._leafletMap.setView([lat, lng], 15);
+          }
+          window._leafletMap.off(); // Limpiar eventos previos
+          window._leafletMap.on('click', function(e) {
+            if (window.marker) { window._leafletMap.removeLayer(window.marker); }
+            window.marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(window._leafletMap);
+            window.selectedLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
             document.getElementById('selected-address').innerHTML = 'Ubicación seleccionada ✓';
             document.getElementById('confirm-btn').disabled = false;
-            
-            // Geocodificación
             fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + e.latlng.lat + '&lon=' + e.latlng.lng)
               .then(response => response.json())
               .then(data => {
                 if (data && data.display_name) {
                   document.getElementById('selected-address').innerHTML = '📍 ' + data.display_name;
-                  selectedLocation.address = data.display_name;
+                  window.selectedLocation.address = data.display_name;
                 }
               })
-              .catch(error => {
-                console.error('Error en geocodificación:', error);
-              });
+              .catch(error => { console.error('Error en geocodificación:', error); });
           });
         }
-
         function confirmLocation() {
-          if (selectedLocation) {
-            const address = selectedLocation.address || 'Ubicación seleccionada';
-            const message = JSON.stringify({
-              type: 'locationSelected',
-              location: address,
-              coordinates: {
-                lat: selectedLocation.lat,
-                lng: selectedLocation.lng
-              }
-            });
-            
-            if (window.ReactNativeWebView) {
-              window.ReactNativeWebView.postMessage(message);
-            }
+          if (window.selectedLocation) {
+            const address = window.selectedLocation.address || 'Ubicación seleccionada';
+            const message = JSON.stringify({ type: 'locationSelected', location: address, coordinates: { lat: window.selectedLocation.lat, lng: window.selectedLocation.lng } });
+            if (window.ReactNativeWebView) { window.ReactNativeWebView.postMessage(message); }
           }
         }
-
-        // Funciones para manejar ubicación nativa desde React Native
         function handleNativeLocationSuccess(lat, lng, address) {
-          console.log('Ubicación nativa recibida:', lat, lng, address);
-          
           document.getElementById('location-prompt').style.display = 'none';
+          document.getElementById('manual-input-container').style.display = 'none';
           document.getElementById('map').style.display = 'block';
           document.getElementById('instructions').style.display = 'block';
-          
           initMapWithLocation(lat, lng);
-          
-          // Mostrar mensaje de éxito
-          document.getElementById('instructions').innerHTML = 
-            '<p><strong>✅ Ubicación detectada!</strong> ' + address + '</p><p>🎯 Toca en el mapa para seleccionar tu ubicación de entrega</p><p id="selected-address">Ninguna ubicación seleccionada</p><button id="confirm-btn" class="confirm-btn" disabled onclick="confirmLocation()">✓ Confirmar esta ubicación</button>';
+          document.getElementById('instructions').innerHTML = '<p><strong>✅ Ubicación detectada!</strong> ' + address + '</p><p>🎯 Toca en el mapa para seleccionar tu ubicación de entrega</p><p id="selected-address">Ninguna ubicación seleccionada</p><button id="confirm-btn" class="confirm-btn" disabled onclick="confirmLocation()">✓ Confirmar esta ubicación</button>';
         }
-
         function handleNativeLocationError(error) {
-          console.error('Error de ubicación nativa:', error);
-          
-          document.getElementById('location-prompt').innerHTML = 
-            '<div class="gps-icon">⚠️</div><h3>Error de ubicación</h3><p>' + error + '</p><button onclick="initMapManually()" class="enable-gps-btn">📍 Continuar sin GPS</button><button onclick="requestLocation()" class="enable-gps-btn" style="background: transparent; color: #667eea; border: 2px solid #667eea;">🔄 Intentar de nuevo</button>';
+          document.getElementById('location-prompt').innerHTML = '<div class="gps-icon">⚠️</div><h3>Error de ubicación</h3><p>' + error + '</p><button onclick="initMapManually()" class="enable-gps-btn">📍 Continuar sin GPS</button><button onclick="requestLocation()" class="enable-gps-btn" style="background: transparent; color: #667eea; border: 2px solid #667eea;">🔄 Intentar de nuevo</button>';
         }
-
         // Escuchar mensajes de React Native
         document.addEventListener('message', function(event) {
           const data = JSON.parse(event.data);
-          console.log('Mensaje recibido:', data);
-          
-          if (data.type === 'setLocation') {
-            handleNativeLocationSuccess(data.lat, data.lng, data.address);
-          } else if (data.type === 'locationError') {
-            handleNativeLocationError(data.error);
-          }
+          if (data.type === 'setLocation') { handleNativeLocationSuccess(data.lat, data.lng, data.address); }
+          else if (data.type === 'locationError') { handleNativeLocationError(data.error); }
         });
-        
-        // Para Android
         window.addEventListener('message', function(event) {
           const data = JSON.parse(event.data);
-          console.log('Mensaje recibido (Android):', data);
-          
-          if (data.type === 'setLocation') {
-            handleNativeLocationSuccess(data.lat, data.lng, data.address);
-          } else if (data.type === 'locationError') {
-            handleNativeLocationError(data.error);
-          }
+          if (data.type === 'setLocation') { handleNativeLocationSuccess(data.lat, data.lng, data.address); }
+          else if (data.type === 'locationError') { handleNativeLocationError(data.error); }
         });
+        // Si el usuario quiere continuar sin GPS tras error
+        function initMapManually() {
+          document.getElementById('location-prompt').style.display = 'none';
+          document.getElementById('manual-input-container').style.display = 'flex';
+        }
       </script>
     </body>
     </html>

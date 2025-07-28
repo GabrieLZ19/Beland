@@ -166,7 +166,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
                   {isLoadingLocation
                     ? "Detectando tu ubicación..."
                     : currentLocation && !currentLocation.error
-                    ? "Ubicación detectada ✓"
+                    ? "Ubicación detectada "
                     : "Usar mi ubicación actual"}
                 </Text>
                 <Text style={modalStyles.mapButtonSubtext}>
