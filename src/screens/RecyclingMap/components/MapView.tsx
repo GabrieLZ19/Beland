@@ -1,12 +1,37 @@
 import React, { useRef, useEffect, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Platform } from "react-native";
 import { WebView } from "react-native-webview";
 import { styles } from "@screens/RecyclingMap/styles/MapStyles";
-import { useRecyclingMap } from "../hooks/useRecyclingMap";
+import { useRecyclingMapContext } from "../context/RecyclingMapContext";
+let MapViewWeb: any = null;
+if (Platform.OS === "web") {
+  MapViewWeb = require("./MapViewWeb").MapViewWeb;
+}
 
 export const MapView = () => {
-  const { filteredPoints, selectedPoint, userLocation, pulseAnim } =
-    useRecyclingMap();
+  const { filteredPoints, selectedPoint, userLocation, handlePointPress } =
+    useRecyclingMapContext();
+  if (Platform.OS === "web" && MapViewWeb) {
+    return (
+      <MapViewWeb
+        userLocation={userLocation}
+        points={filteredPoints.map((point: any) => ({
+          ...point,
+          isSelected: selectedPoint?.id === point.id,
+          isNearest:
+            selectedPoint === null &&
+            filteredPoints.length > 0 &&
+            point.id === filteredPoints[0].id,
+        }))}
+        selectedPointId={selectedPoint?.id || null}
+        onSelectPoint={(id: string) => {
+          const point = filteredPoints.find((p: any) => p.id === id);
+          if (point) handlePointPress(point);
+        }}
+      />
+    );
+  }
+
   const webViewRef = useRef<WebView>(null);
   const [isMapLoading, setIsMapLoading] = useState(true);
 
@@ -14,18 +39,21 @@ export const MapView = () => {
     if (userLocation && filteredPoints.length > 0 && webViewRef.current) {
       updateMapData();
     }
-  }, [userLocation, filteredPoints, selectedPoint]);
+  }, [userLocation, filteredPoints, selectedPoint?.id]);
 
   const updateMapData = () => {
     if (!webViewRef.current || !userLocation) return;
-    const points = filteredPoints.slice(0, 5).map((point: any) => ({
-      ...point,
-      isSelected: selectedPoint?.id === point.id,
-      isNearest:
-        selectedPoint === null &&
-        filteredPoints.length > 0 &&
-        point.id === filteredPoints[0].id,
-    }));
+    const points = filteredPoints.map((point: any) => {
+      const isSelected = selectedPoint?.id === point.id;
+      return {
+        ...point,
+        isSelected,
+        isNearest:
+          selectedPoint === null &&
+          filteredPoints.length > 0 &&
+          point.id === filteredPoints[0].id,
+      };
+    });
     const message = {
       type: "updateData",
       userLocation: userLocation,
@@ -52,7 +80,6 @@ export const MapView = () => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type === "debug") {
-        console.log(data.message, data.data || "");
         return;
       }
       switch (data.type) {
@@ -63,11 +90,16 @@ export const MapView = () => {
           }, 500);
           break;
         case "markerClicked":
-          // Aquí podrías levantar un callback o manejar la selección desde el hook global
+          if (data.pointId) {
+            const point = filteredPoints.find(
+              (p: any) => p.id === data.pointId
+            );
+            if (point) handlePointPress(point);
+          }
           break;
       }
     } catch (error) {
-      console.error("Error processing WebView message:", error);
+      // Silenciar errores de parseo
     }
   };
 
@@ -93,74 +125,69 @@ export const MapView = () => {
       <div id="map"></div>
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
       <script>
-        let map;
-        let userMarker;
-        let pointMarkers = [];
-        function logToRN(message, data) {
-          if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'debug', message: message, data: data }));
-          }
-        }
-        function initMap() {
-          map = L.map('map', { zoomControl: true, attributionControl: false }).setView([-34.6037, -58.3816], 13);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-          if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapLoaded' }));
-          }
-        }
-        function createRecyclingIcon(isSelected, isNearest) {
-          let className = 'recycling-marker';
-          if (isSelected) className += ' selected';
-          else if (isNearest) className += ' nearest';
-          return L.divIcon({ html: '<div class="' + className + '">♻️</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
-        }
-        function createUserIcon() {
-          return L.divIcon({ html: '<div class="user-location"></div>', className: '', iconSize: [22, 22], iconAnchor: [11, 11] });
-        }
-        function updateMapData(data) {
-          if (!map) return;
-          pointMarkers.forEach(marker => { map.removeLayer(marker); });
-          pointMarkers = [];
-          if (userMarker) { map.removeLayer(userMarker); }
-          if (data.userLocation) {
-            userMarker = L.marker([data.userLocation.latitude, data.userLocation.longitude], { icon: createUserIcon() }).addTo(map);
-          }
-          if (data.points && data.points.length > 0) {
-            data.points.forEach((point, index) => {
-              try {
-                const marker = L.marker([point.latitude, point.longitude], { icon: createRecyclingIcon(point.isSelected, point.isNearest) }).addTo(map);
-                marker.pointId = point.id;
-                marker.on('click', function() {
-                  if (window.ReactNativeWebView) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'markerClicked', pointId: point.id }));
-                  }
-                });
-                marker.bindPopup('<div style="text-align: center; padding: 5px;"><strong>' + point.name + '</strong><br><small>' + point.address + '</small>' + (point.isNearest ? '<br><span style="color: #F88D2A; font-weight: bold;">Más cercano</span>' : '') + '</div>');
-                pointMarkers.push(marker);
-              } catch (error) {}
-            });
-          }
-          let centerLat, centerLng, zoomLevel = 13;
-          if (data.selectedPointId) {
-            const selectedPoint = data.points?.find(p => p.id === data.selectedPointId);
-            if (selectedPoint) {
-              centerLat = selectedPoint.latitude;
-              centerLng = selectedPoint.longitude;
-              zoomLevel = 15;
-            } else if (data.userLocation) {
-              centerLat = data.userLocation.latitude;
-              centerLng = data.userLocation.longitude;
+        (function() {
+          function logToRN(message, data) {
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'debug', message: message, data: data }));
             }
-          } else if (data.userLocation) {
-            centerLat = data.userLocation.latitude;
-            centerLng = data.userLocation.longitude;
           }
-          if (centerLat && centerLng) {
-            map.setView([centerLat, centerLng], zoomLevel);
+          function initMap() {
+            var map = L.map('map', { zoomControl: true, attributionControl: false }).setView([-34.6037, -58.3816], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            window._nativeMap = map;
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapLoaded' }));
+            }
+            window.updateMapData = function(data) {
+              if (!map) return;
+              if (window._userMarker) { map.removeLayer(window._userMarker); }
+              if (window._pointMarkers) { window._pointMarkers.forEach(function(marker) { map.removeLayer(marker); }); }
+              window._pointMarkers = [];
+              if (data.userLocation) {
+                window._userMarker = L.marker([data.userLocation.latitude, data.userLocation.longitude], { icon: L.divIcon({ html: '<div class="user-location"></div>', className: '', iconSize: [22, 22], iconAnchor: [11, 11] }) }).addTo(map);
+              }
+              if (data.points && data.points.length > 0) {
+                data.points.forEach(function(point) {
+                  var className = 'recycling-marker';
+                  if (point.isSelected) className += ' selected';
+                  else if (point.isNearest) className += ' nearest';
+                  var marker = L.marker([point.latitude, point.longitude], { icon: L.divIcon({ html: '<div class="' + className + '">♻️</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] }) }).addTo(map);
+                  marker.pointId = point.id;
+                  marker.on('click', function() {
+                    if (window.ReactNativeWebView) {
+                      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'markerClicked', pointId: point.id }));
+                    }
+                  });
+                  marker.bindPopup('<div style="text-align: center; padding: 5px;"><strong>' + point.name + '</strong><br><small>' + point.address + '</small>' + (point.isNearest ? '<br><span style="color: #F88D2A; font-weight: bold;">Más cercano</span>' : '') + '</div>');
+                  window._pointMarkers.push(marker);
+                });
+              }
+              var centerLat, centerLng, zoomLevel = 13;
+              if (data.selectedPointId) {
+                var selectedPoint = data.points && data.points.find(function(p) { return p.id === data.selectedPointId; });
+                if (selectedPoint) {
+                  centerLat = selectedPoint.latitude;
+                  centerLng = selectedPoint.longitude;
+                  zoomLevel = 15;
+                } else if (data.userLocation) {
+                  centerLat = data.userLocation.latitude;
+                  centerLng = data.userLocation.longitude;
+                }
+              } else if (data.userLocation) {
+                centerLat = data.userLocation.latitude;
+                centerLng = data.userLocation.longitude;
+              }
+              if (centerLat && centerLng) {
+                map.setView([centerLat, centerLng], zoomLevel);
+              }
+            };
           }
-        }
-        window.updateMapData = updateMapData;
-        window.onload = function() { initMap(); };
+          if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            initMap();
+          } else {
+            window.addEventListener('DOMContentLoaded', initMap);
+          }
+        })();
       </script>
     </body>
     </html>

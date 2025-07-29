@@ -4,7 +4,7 @@ import { styles } from "@screens/RecyclingMap/styles/PointCardStyles";
 import { RecyclingPoint } from "@screens/RecyclingMap/types/recycling";
 import { RECYCLING_TYPES } from "@constants/recyclingData";
 import { LocationService } from "@services/locationService";
-import { useRecyclingMap } from "@screens/RecyclingMap/hooks/useRecyclingMap";
+import { useRecyclingMapContext } from "../context/RecyclingMapContext";
 import { colors } from "@styles/colors";
 
 interface PointCardProps {
@@ -20,7 +20,7 @@ export const PointCard = ({
   onPress,
   onDirectionsPress,
 }: PointCardProps) => {
-  const { userLocation } = useRecyclingMap();
+  const { userLocation } = useRecyclingMapContext();
 
   return (
     <TouchableOpacity

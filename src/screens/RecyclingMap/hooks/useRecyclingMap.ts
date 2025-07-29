@@ -85,10 +85,13 @@ export const useRecyclingMap = () => {
   };
 
   const handlePointPress = (point: RecyclingPoint) => {
+    console.log("[HOOK] handlePointPress llamado con:", point?.id, point?.name);
     if (selectedPoint?.id === point.id) {
       setSelectedPoint(null);
+      console.log("[HOOK] Deseleccionando punto:", point?.id);
     } else {
       setSelectedPoint(point);
+      console.log("[HOOK] Seleccionando punto:", point?.id);
     }
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
@@ -112,6 +115,7 @@ export const useRecyclingMap = () => {
     selectedPoint,
     scrollViewRef,
     handlePointPress,
+    setSelectedPoint,
     searchQuery,
     setSearchQuery,
     selectedFilters,
@@ -119,5 +123,12 @@ export const useRecyclingMap = () => {
     handleDirections,
     pulseAnim,
     userLocation,
+    // Log para depuración del estado
+    ...(console.log(
+      "[HOOK] selectedPoint en return:",
+      selectedPoint?.id,
+      selectedPoint?.name
+    ),
+    {}),
   };
 };
