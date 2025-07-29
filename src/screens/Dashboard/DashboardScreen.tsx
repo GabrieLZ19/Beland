@@ -1,6 +1,5 @@
 import React from "react";
 import { View, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "../../components/layout/AppHeader";
 import { RecyclingCard, RewardsCard, ActivitySection } from "./components";
 import { RecyclingMapWidget } from "../../components/RecyclingMapWidget";
@@ -17,7 +16,7 @@ export const DashboardScreen = () => {
   const { userStats, activities } = useDashboardData();
 
   return (
-    <SafeAreaView style={containerStyles.container} edges={["bottom"]}>
+    <View style={containerStyles.container}>
       <ScrollView style={containerStyles.scrollView}>
         {/* Header */}
         <AppHeader
@@ -45,6 +44,6 @@ export const DashboardScreen = () => {
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
