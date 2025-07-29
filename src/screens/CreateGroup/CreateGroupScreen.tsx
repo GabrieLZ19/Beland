@@ -391,8 +391,8 @@ export const CreateGroupScreen = ({ navigation, route }: any) => {
         "success"
       );
 
-      // No limpiar el store ni la persistencia automáticamente
-      // El usuario puede limpiar el grupo manualmente si lo desea
+      // Limpiar el store automáticamente después de crear el grupo
+      clearGroup();
       setTimeout(() => {
         navigation.goBack();
       }, 2000);
