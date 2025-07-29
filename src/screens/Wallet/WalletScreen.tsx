@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPayphonePayment } from "../../services/payphoneService";
 import {
   View,
   ScrollView,
@@ -47,22 +48,24 @@ export const WalletScreen: React.FC = () => {
   });
   const [payphoneData, setPayphoneData] = useState({ phone: "" });
 
-  // Ejemplo de props para la cajita Payphone (reemplaza por tus datos reales)
+  // Obtener variables de entorno
+  const payphoneToken = process.env.EXPO_PUBLIC_PAYPHONE_TOKEN || "";
+  const payphoneStoreId = process.env.EXPO_PUBLIC_PAYPHONE_STOREID || "";
+  const [payphoneUrl, setPayphoneUrl] = useState<string>("");
   const payphoneProps = {
-    token: "YOUR_TOKEN",
+    token: payphoneToken,
     amount: 315,
     amountWithoutTax: 200,
     amountWithTax: 100,
     tax: 15,
     service: 0,
     tip: 0,
-    storeId: "YOUR_STOREID",
+    storeId: payphoneStoreId,
     reference: "Motivo de Pago",
     currency: "USD",
     clientTransactionId: "ID-UNICO-X-TRANSACCION",
     backgroundColor: "#6610f2",
-    // Para mobile, la url de pago generada
-    urlMobile: "https://pay.payphonetodoesposible.com/api/button/your-pay-url",
+    urlMobile: payphoneUrl,
   };
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -130,8 +133,13 @@ export const WalletScreen: React.FC = () => {
                     ? {
                         ...action,
                         onPress: () => {
-                          if (selectedAccount === "payphone")
+                          if (selectedAccount === "payphone") {
+                            // Usar el browser_fallback_url directo para pruebas en mobile
+                            setPayphoneUrl(
+                              process.env.EXPO_PUBLIC_PAYPHONE_BUTTON_URL || ""
+                            );
                             setShowPayphone(true);
+                          }
                           // Aquí podrías manejar lógica para banco si lo deseas
                         },
                       }
